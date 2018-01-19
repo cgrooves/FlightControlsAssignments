@@ -142,10 +142,40 @@ end
 %--------------------------------------------------------------
 function [V,F,facecolors] = defineVehicleBody
     
+    % define frame variables
+    fuse_h = 0.25;
+    fuse_l1 = 0.5;
+    fuse_l2;
+    wing_l;
+    wing_w;
+    fuse_l3;
+    fuse_w;
+    tailwing_l;
+    tailwing_w;
+    tail_h;
+
     % Define the vertices
-    
+    V = [...
+        fuse_l1, 0, 0.1*fuse_h; % pt 1
+        fuse_l2, fuse_w/2, -0.4*fuse_h; % pt 2
+        fuse_l2, -fuse_w/2, -0.4*fuse_h; % pt 3
+        fuse_l2, -fuse_w/2, 0.4*fuse_h; % pt 4
+        fuse_l2, fuse_w/2, 0.4*fuse_h; % pt 5
+        -fuse_l3, 0, 0; % pt 6
+        0, wing_w/2, 0; % pt 7
+        -wing_l, wing_w/2, 0; % pt 8
+        -wing_l, -wing_w/2, 0; % pt 9
+        0, -wing_w/2, 0; % pt 10
+        tailwing_l-fuse_l3, tailwing_w/2, 0; % pt 11
+        -fuse_l3, tailwing_w/2, 0; % pt 12
+        -fuse_l3, -tailwing_w/2, 0; % pt 13
+        tailwing_l-fuse_l3, -tailwing_w/2, 0; % pt 14
+        tailwing_l-fuse_l3, 0, 0; % pt 15
+        -fuse_l3, 0, -tail_h; % pt 16
+        ];
     
     % define the faces
+    
     
     % define colors to be used
     
