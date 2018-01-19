@@ -102,7 +102,7 @@ end
 %--------------------------------------------------------------
 % Translates pts by x,y,z and returns XYZ
 %--------------------------------------------------------------
-function XYZ = translate(pts,x,y,z)
+function XYZ = translate(pts,pn,pe,pd)
 
     XYZ = pts + repmat([pn;pe;pd],1,size(pts,2));
 
@@ -143,16 +143,16 @@ end
 function [V,F,facecolors] = defineVehicleBody
     
     % define frame variables
-    fuse_h = 0.25;
-    fuse_l1 = 0.5;
-    fuse_l2;
-    wing_l;
-    wing_w;
-    fuse_l3;
-    fuse_w;
-    tailwing_l;
-    tailwing_w;
-    tail_h;
+    fuse_h = 1;
+    fuse_l1 = 1;
+    fuse_l2 = 0.5;
+    wing_l = 0.5;
+    wing_w = 5;
+    fuse_l3 = 5;
+    fuse_w = 0.75;
+    tailwing_l = 1;
+    tailwing_w = 3;
+    tail_h = 1;
 
     % Define the vertices
     V = [...
@@ -172,7 +172,7 @@ function [V,F,facecolors] = defineVehicleBody
         tailwing_l-fuse_l3, -tailwing_w/2, 0; % pt 14
         tailwing_l-fuse_l3, 0, 0; % pt 15
         -fuse_l3, 0, -tail_h; % pt 16
-        ];
+        ]';
     
     % define the faces
     F = [...
