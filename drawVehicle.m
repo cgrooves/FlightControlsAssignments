@@ -175,10 +175,44 @@ function [V,F,facecolors] = defineVehicleBody
         ];
     
     % define the faces
-    
+    F = [...
+        1, 2, 3; % fuselage - nose
+        1, 3, 4;
+        1, 4, 5;
+        1, 2, 5;
+        2, 3, 6; % fuselage - body
+        3, 4, 6;
+        4, 5, 6;
+        5, 2, 6;
+        7, 9, 8; % wings
+        7, 10, 9;
+        11, 13, 12; % tailwing
+        11, 14, 13;
+        15, 16, 6; % tail
+        ];
     
     % define colors to be used
-    
-    % assign colors to faces   
+    nose = [1, 1, 0]; % yellow
+    body = [1, 0, 0]; % red
+    wings = [0, 1, 1]; % cyan
+    tailwing = [0, 1, 1]; % cyan
+    tail = [0, 0, 1]; % blue
+        
+    % assign colors to faces  
+    facecolors = [...
+        nose;
+        nose;
+        nose;
+        nose;
+        body;
+        body;
+        body;
+        body;
+        wings;
+        wings;
+        tailwing;
+        tailwing;
+        tail;
+        ];        
     
 end
