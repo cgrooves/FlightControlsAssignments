@@ -152,7 +152,7 @@ function [V,F,facecolors] = defineVehicleBody
     fuse_w = 0.75;
     tailwing_l = .8;
     tailwing_w = 3;
-    tail_h = 1.5;
+    tail_h = 1;
 
     % Define the vertices
     V = [...
