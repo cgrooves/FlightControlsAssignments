@@ -143,16 +143,16 @@ end
 function [V,F,facecolors] = defineVehicleBody
     
     % define frame variables
-    fuse_h = 1;
-    fuse_l1 = 1;
+    fuse_h = 1.2;
+    fuse_l1 = 1.2;
     fuse_l2 = 0.5;
-    wing_l = 0.5;
-    wing_w = 5;
+    wing_l = 1.5;
+    wing_w = 7;
     fuse_l3 = 5;
     fuse_w = 0.75;
-    tailwing_l = 1;
+    tailwing_l = .8;
     tailwing_w = 3;
-    tail_h = 1;
+    tail_h = 1.5;
 
     % Define the vertices
     V = [...
@@ -192,11 +192,11 @@ function [V,F,facecolors] = defineVehicleBody
         ];
     
     % define colors to be used
-    nose = [1, 1, 0]; % yellow
-    body = [1, 0, 0]; % red
-    wings = [0, 1, 1]; % cyan
-    tailwing = [0, 1, 1]; % cyan
-    tail = [0, 0, 1]; % blue
+    nose = [1, 1, 0];
+    body = [1, 0, 0];
+    wings = [1, 1, 0];
+    tailwing = [1, 1, 0];
+    tail = [1, 1, 0];
         
     % assign colors to faces  
     facecolors = [...
