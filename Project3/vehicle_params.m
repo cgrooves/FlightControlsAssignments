@@ -1,3 +1,4 @@
+P = struct;
 P.gravity = 9.81;
    
 % Using Aerosonde UAV parameters, Appendix E.
@@ -12,10 +13,10 @@ P.Jxz  = 0.1204;
 P.Gamma = P.Jx*P.Jz - P.Jxz^2;
 
 P.Gamma1 = P.Jxz*(P.Jx - P.Jy + P.Jz)/P.Gamma;
-P.Gamma2 = P.Jz*(P.Jz - P.Jy) + P.Jxz^2/P.Gamma;
+P.Gamma2 = (P.Jz*(P.Jz - P.Jy) + P.Jxz^2)/P.Gamma;
 P.Gamma3 = P.Jz/P.Gamma;
-P.Gamma4 = P.Jx/P.Gamma;
-P.Gamma5 = (P.Jz - P.Jx)/P.Gamma;
+P.Gamma4 = P.Jxz/P.Gamma;
+P.Gamma5 = (P.Jz - P.Jx)/P.Jy;
 P.Gamma6 = P.Jxz/P.Jy;
 P.Gamma7 = ((P.Jx - P.Jy)*P.Jx + P.Jxz^2)/P.Gamma;
 P.Gamma8 = P.Jx/P.Gamma;

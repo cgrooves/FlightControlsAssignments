@@ -247,7 +247,7 @@ pd_dot = -sin(theta)*u + sin(phi)*cos(theta)*v + cos(phi)*cos(theta)*w;
 
 u_dot = r*v - q*w + fX/P.mass;
 v_dot = p*w - r*u + fY/P.mass;
-w_dot = q*uu - p*v + fZ/P.mass;
+w_dot = q*u - p*v + fZ/P.mass;
 
 phi_dot = p + sin(phi)*tan(theta)*q + cos(phi)*tan(theta)*r;
 theta_dot = cos(phi)*q - sin(phi)*r;

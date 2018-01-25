@@ -111,7 +111,7 @@ end
 %--------------------------------------------------------------
 % Rotates pts by Euler angles yaw, pitch and roll
 %--------------------------------------------------------------
-function XYZ = rotate(pts,psi,theta,phi)
+function XYZ = rotate(pts,phi,theta,psi)
 
     % define rotation matrix (right handed)
     R_roll = [...
