@@ -36,6 +36,7 @@ function out = forces_moments(x, delta, wind, P)
     v_wg    = wind(5); % gust along body y-axis    
     w_wg    = wind(6); % gust along body z-axis
     
+    % I think this part needs to be redone
     % compute wind data in NED
     w_n = cos(theta)*cos(psi)*w_ns + cos(theta)*sin(psi)*w_es - sin(theta)*w_ds;
     w_e = (sin(phi)*sin(theta)*cos(psi)-cos(phi)*sin(psi))*w_ns + (sin(phi)*sin(theta)*sin(psi)+cos(phi)*cos(psi))*w_es + sin(phi)*cos(theta)*w_ds;
@@ -57,7 +58,7 @@ function out = forces_moments(x, delta, wind, P)
     
     % blending function
     sigma_alpha = (1 + exp(-P.M*(alpha-P.alpha0)) + exp(P.M*(alpha+P.alpha0)))/...
-        ((1 + exp(-P.M*(alpha-P.alpha0)))*(1 + exp(M*(alpha+P.alpha0))));
+        ((1 + exp(-P.M*(alpha-P.alpha0)))*(1 + exp(P.M*(alpha+P.alpha0))));
     
     % nonlinear lift model
     C_L_alpha = (1-sigma_alpha)*(P.C_L_0 + P.C_L_alpha*alpha) + sigma_alpha*(2*sign(alpha)*sin(alpha)^2*cos(alpha));
@@ -70,7 +71,7 @@ function out = forces_moments(x, delta, wind, P)
     
     % Define C functions
     C_chi_alpha = -C_D_alpha*cos(alpha) + C_L_alpha*sin(alpha);
-    C_chi_q_alpha = -P.C_D_q*cos(alpha) + C_L_q*sin(alpha);
+    C_chi_q_alpha = -P.C_D_q*cos(alpha) + P.C_L_q*sin(alpha);
     C_chi_de_alpha = -P.C_D_delta_e*cos(alpha) + P.C_L_delta_e*sin(alpha);
     C_Z_alpha = -C_D_alpha*sin(alpha) - C_L_alpha*cos(alpha);
     C_Z_q_alpha = -P.C_D_q*sin(alpha) - P.C_L_q*cos(alpha);

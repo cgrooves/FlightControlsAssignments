@@ -59,7 +59,7 @@ function drawVehicle(uu)
         ylabel('North')
         zlabel('Up')
         view(32,47)
-        axis([-10,10,-10,10,-10,10]);
+        axis([-1000,1000,-1000,1000,-1000,1000]);
         hold on
         
     else
@@ -155,7 +155,7 @@ function [V,F,facecolors] = defineVehicleBody
     tail_h = 1;
 
     % Define the vertices
-    V = [...
+    V = 80*[...
         fuse_l1, 0, 0.1*fuse_h; % pt 1
         fuse_l2, fuse_w/2, -0.4*fuse_h; % pt 2
         fuse_l2, -fuse_w/2, -0.4*fuse_h; % pt 3

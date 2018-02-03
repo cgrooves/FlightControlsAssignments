@@ -1,5 +1,5 @@
 P = struct;
-P.gravity = 9.81;
+P.g = 9.81;
    
 % Using Aerosonde UAV parameters, Appendix E.
 % physical parameters of airframe
@@ -19,7 +19,7 @@ P.k_motor       = 80;
 P.k_T_P         = 0;
 P.k_Omega       = 0;
 P.e             = 0.9;
-P.AR            = P.b^2/P.S-wing;
+P.AR            = P.b^2/P.S_wing;
 
 P.C_L_0         = 0.28;
 P.C_L_alpha     = 3.45;
@@ -70,10 +70,12 @@ P.Gamma7 = ((P.Jx - P.Jy)*P.Jx + P.Jxz^2)/P.Gamma;
 P.Gamma8 = P.Jx/P.Gamma;
 
 % initial conditions
-P.pn0    =  0; % initial North position
+P.Va0 = 17;
+
+P.pn0    =  -1000; % initial North position
 P.pe0    =  0; % initial East position
 P.pd0    =  0; % initial Down position (negative altitude)
-P.u0     =  0; % initial velocity along body x-axis
+P.u0     =  P.Va0; % initial velocity along body x-axis
 P.v0     =  0; % initial velocity along body y-axis
 P.w0     =  0; % initial velocity along body z-axis
 P.phi0   =  0; % initial roll angle
@@ -82,3 +84,16 @@ P.psi0   =  0; % initial yaw angle
 P.p0     =  0; % initial body frame roll rate
 P.q0     =  0; % initial body frame pitch rate
 P.r0     =  0; % initial body frame yaw rate
+
+% wind parameters
+P.wind_n = 0;%3;
+P.wind_e = 0;%2;
+P.wind_d = 0;
+P.L_u = 200;
+P.L_v = 200;
+P.L_w = 50;
+P.sigma_u = 1.06; 
+P.sigma_v = 1.06;
+P.sigma_w = .7;
+
+P.Ts = 0.1;
