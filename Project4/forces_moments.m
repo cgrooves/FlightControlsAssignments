@@ -81,9 +81,9 @@ function out = forces_moments(x, delta, wind, P)
     Force(2) =  P.mass*P.g*cos(theta)*sin(phi) + P.rho*Va^2*P.S_wing/2*(P.C_Y_0 + P.C_Y_beta*beta + P.C_Y_p*p*P.b/2/Va + P.C_Y_r*P.b*r/2/Va + P.C_Y_delta_a*delta_a + P.C_Y_delta_r*delta_r);
     Force(3) =  P.mass*P.g*cos(theta)*cos(phi) + P.rho*Va^2*P.S_wing/2*(C_Z_alpha + C_Z_q_alpha*P.c*q/2/Va + C_Z_de_alpha*delta_e);
     
-    Torque(1) = 0;
-    Torque(2) = 0;   
-    Torque(3) = 0;
+    Torque(1) = P.rho*Va^2*P.S_wing/2*P.b*(P.C_ell_0 + P.C_ell_beta*beta + P.C_ell_p*P.b*p/2/Va + P.C_ell_r*P.b*r/2/Va + P.C_ell_delta_a*delta_a + P.C_ell_delta_r*delta_r) - P.k_T_P*(P.k_Omega*delta_t)^2;
+    Torque(2) = P.rho*Va^2*P.S_wing/2*P.c*(P.C_m_0 + P.C_m_alpha*alpha + P.C_m_q*P.c*q/2/Va + P.C_m_delta_e*delta_e);   
+    Torque(3) = P.rho*Va^2*P.S_wing/2*P.b*(P.C_n_0 + P.C_n_beta*beta + P.C_n_p*P.b*p/2/Va + P.C_n_r*P.b*r/2/Va + P.C_n_delta_a*delta_a + P.C_n_delta_r*delta_r);
    
     out = [Force'; Torque'; Va; alpha; beta; w_n; w_e; w_d];
 end
