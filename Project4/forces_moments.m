@@ -50,6 +50,7 @@ function out = forces_moments(x, delta, wind, P)
     v_r = v - v_w;
     w_r = w - w_w;
     
+    % Compute airspeed, angle of attack, sideslip angle
     Va = sqrt(u_r^2 + v_r^2 + w_r^2);
     alpha = atan2(w_r,u_r);
     beta = asin(v_r / Va);
@@ -67,10 +68,18 @@ function out = forces_moments(x, delta, wind, P)
     % pitching moment
     C_m_alpha = P.C_m_0 + P.C_m_alpha*alpha;
     
+    % Define C functions
+    C_chi_alpha = -C_D_alpha*cos(alpha) + C_L_alpha*sin(alpha);
+    C_chi_q_alpha = -P.C_D_q*cos(alpha) + C_L_q*sin(alpha);
+    C_chi_de_alpha = -P.C_D_delta_e*cos(alpha) + P.C_L_delta_e*sin(alpha);
+    C_Z_alpha = -C_D_alpha*sin(alpha) - C_L_alpha*cos(alpha);
+    C_Z_q_alpha = -P.C_D_q*sin(alpha) - P.C_L_q*cos(alpha);
+    C_Z_de_alpha = -P.C_D_delta_e*sin(alpha) - P.C_L_delta_e*cos(alpha);
+    
     % compute external forces and torques on aircraft
-    Force(1) =  0;
-    Force(2) =  0;
-    Force(3) =  0;
+    Force(1) =  -P.mass*P.g*sin(theta) + P.rho*Va^2*P.S_wing/2*(C_chi_alpha + C_chi_q_alpha*P.c*q/2/Va + C_chi_de_alpha*delta_e) + P.rho*P.S_prop*P.C_prop/2*((P.k_motor*delta_t)^2 - Va^2);
+    Force(2) =  P.mass*P.g*cos(theta)*sin(phi) + P.rho*Va^2*P.S_wing/2*(P.C_Y_0 + P.C_Y_beta*beta + P.C_Y_p*p*P.b/2/Va + P.C_Y_r*P.b*r/2/Va + P.C_Y_delta_a*delta_a + P.C_Y_delta_r*delta_r);
+    Force(3) =  P.mass*P.g*cos(theta)*cos(phi) + P.rho*Va^2*P.S_wing/2*(C_Z_alpha + C_Z_q_alpha*P.c*q/2/Va + C_Z_de_alpha*delta_e);
     
     Torque(1) = 0;
     Torque(2) = 0;   
