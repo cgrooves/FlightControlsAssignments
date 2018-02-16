@@ -36,7 +36,6 @@ function out = forces_moments(x, delta, wind, P)
     v_wg    = wind(5); % gust along body y-axis    
     w_wg    = wind(6); % gust along body z-axis
     
-    % I think this part needs to be redone
     % compute wind data in NED
     w_n = cos(theta)*cos(psi)*w_ns + cos(theta)*sin(psi)*w_es - sin(theta)*w_ds;
     w_e = (sin(phi)*sin(theta)*cos(psi)-cos(phi)*sin(psi))*w_ns + (sin(phi)*sin(theta)*sin(psi)+cos(phi)*cos(psi))*w_es + sin(phi)*cos(theta)*w_ds;
@@ -55,14 +54,7 @@ function out = forces_moments(x, delta, wind, P)
     Va = sqrt(u_r^2 + v_r^2 + w_r^2);
     alpha = atan2(w_r,u_r);
     beta = asin(v_r / Va);
-    
-    % blending function
-    sigma_alpha = (1 + exp(-P.M*(alpha-P.alpha0)) + exp(P.M*(alpha+P.alpha0)))/...
-        ((1 + exp(-P.M*(alpha-P.alpha0)))*(1 + exp(P.M*(alpha+P.alpha0))));
-    
-    % nonlinear lift model
-    C_L_alpha = (1-sigma_alpha)*(P.C_L_0 + P.C_L_alpha*alpha) + sigma_alpha*(2*sign(alpha)*sin(alpha)^2*cos(alpha));
-    
+        
     % nonlinear drag model
     C_D_alpha = P.C_D_p + (P.C_L_0 + P.C_L_alpha*alpha)^2/(pi*P.e*P.AR);
     
@@ -70,15 +62,15 @@ function out = forces_moments(x, delta, wind, P)
     C_m_alpha = P.C_m_0 + P.C_m_alpha*alpha;
     
     % Define C functions
-    C_chi_alpha = -C_D_alpha*cos(alpha) + C_L_alpha*sin(alpha);
+    C_chi_alpha = -C_D_alpha*cos(alpha) + C_L(alpha,P)*sin(alpha);
     C_chi_q_alpha = -P.C_D_q*cos(alpha) + P.C_L_q*sin(alpha);
-    C_chi_de_alpha = -P.C_D_delta_e*cos(alpha) + P.C_L_delta_e*sin(alpha);
-    C_Z_alpha = -C_D_alpha*sin(alpha) - C_L_alpha*cos(alpha);
+    C_chi_delta_e_alpha = -P.C_D_delta_e*cos(alpha) + P.C_L_delta_e*sin(alpha);
+    C_Z_alpha = -C_D_alpha*sin(alpha) - C_L(alpha,P)*cos(alpha);
     C_Z_q_alpha = -P.C_D_q*sin(alpha) - P.C_L_q*cos(alpha);
     C_Z_de_alpha = -P.C_D_delta_e*sin(alpha) - P.C_L_delta_e*cos(alpha);
     
     % compute external forces and torques on aircraft
-    Force(1) =  -P.mass*P.g*sin(theta) + P.rho*Va^2*P.S_wing/2*(C_chi_alpha + C_chi_q_alpha*P.c*q/2/Va + C_chi_de_alpha*delta_e) + P.rho*P.S_prop*P.C_prop/2*((P.k_motor*delta_t)^2 - Va^2);
+    Force(1) =  -P.mass*P.g*sin(theta) + P.rho*Va^2*P.S_wing/2*(C_chi_alpha + C_chi_q_alpha*P.c*q/2/Va + C_chi_delta_e_alpha*delta_e) + P.rho*P.S_prop*P.C_prop/2*((P.k_motor*delta_t)^2 - Va^2);
     Force(2) =  P.mass*P.g*cos(theta)*sin(phi) + P.rho*Va^2*P.S_wing/2*(P.C_Y_0 + P.C_Y_beta*beta + P.C_Y_p*p*P.b/2/Va + P.C_Y_r*P.b*r/2/Va + P.C_Y_delta_a*delta_a + P.C_Y_delta_r*delta_r);
     Force(3) =  P.mass*P.g*cos(theta)*cos(phi) + P.rho*Va^2*P.S_wing/2*(C_Z_alpha + C_Z_q_alpha*P.c*q/2/Va + C_Z_de_alpha*delta_e);
     
@@ -89,5 +81,15 @@ function out = forces_moments(x, delta, wind, P)
     out = [Force'; Torque'; Va; alpha; beta; w_n; w_e; w_d];
 end
 
+% nonlinear lift model
+function out = C_L(alpha,P)
+    
+% blending function
+sigma = (1 + exp(-P.M*(alpha-P.alpha0)) + exp(P.M*(alpha+P.alpha0)))/...
+    ((1 + exp(-P.M*(alpha-P.alpha0)))*(1 + exp(P.M*(alpha+P.alpha0))));
 
+% nonlinear drag model
+out = (1-sigma)*(P.C_L_0 + P.C_L_alpha*alpha) + sigma*(2*sign(alpha)*...
+    sin(alpha)^2*cos(alpha));
 
+end
