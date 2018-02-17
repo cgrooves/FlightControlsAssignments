@@ -162,16 +162,18 @@ function [delta, x_command] = autopilot_uavbook(Va_c,h_c,chi_c,Va,h,chi,phi,thet
 
     %----------------------------------------------------------
     % lateral autopilot
-    if t==0,
+    if t==0
         % assume no rudder, therefore set delta_r=0
-        delta_r = 0; %coordinated_turn_hold(beta, 1, P);
+        delta_r = 0;
+        sideslip_hold(beta, 1, P);
         phi_c   = course_hold(chi_c, chi, r, 1, P);
+        delta_a = roll_hold(phi_c, phi, p, 1, P);
 
     else
         phi_c   = course_hold(chi_c, chi, r, 0, P);
-        delta_r = 0;%coordinated_turn_hold(beta, 0, P);
+        delta_r = sideslip_hold(beta, 0, P);
     end
-    delta_a = roll_hold(phi_c, phi, p, P);     
+    delta_a = roll_hold(phi_c, phi, p, 0, P);     
   
     
     %----------------------------------------------------------
@@ -181,31 +183,39 @@ function [delta, x_command] = autopilot_uavbook(Va_c,h_c,chi_c,Va,h,chi,phi,thet
     persistent altitude_state;
     persistent initialize_integrator;
     % initialize persistent variable
-    if t==0,
-        if h<=P.altitude_take_off_zone,     
+    if t==0
+        if h<=P.altitude_take_off_zone    
             altitude_state = 1;
-        elseif h<=h_c-P.altitude_hold_zone, 
+        elseif h<=h_c-P.altitude_hold_zone
             altitude_state = 2;
-        elseif h>=h_c+P.altitude_hold_zone, 
+        elseif h>=h_c+P.altitude_hold_zone
             altitude_state = 3;
         else
             altitude_state = 4;
         end
         initialize_integrator = 1;
+        airspeed_hold_pitch(Va_c, Va, 1, P);
+        airspeed_hold_throttle(Va_c, Va, 1, P);
+        altitude_hold_pitch(h_c, h, 1, P);
     end
     
     % implement state machine
-    switch altitude_state,
-        case 1,  % in take-off zone
-            
-        case 2,  % climb zone
-             
-        case 3, % descend zone
-
-        case 4, % altitude hold zone
+    switch altitude_state
+        case 1  % in take-off zone
+            delta_t = 1;
+            theta_c = P.theta_take_off;
+        case 2  % climb zone
+             delta_t = 1;
+             theta_c = airspeed_hold_pitch(Va_c, Va, 0, P);
+        case 3 % descend zone
+            delta_t = 0;
+            theta_c = airspeed_hold_pitch(Va_c, Va, 0, P);
+        case 4 % altitude hold zone
+            delta_t = airspeed_hold_throttle(Va_c, Va, 0, P);
+            theta_c = altitude_hold_pitch(h_c, h, q, P);
     end
     
-    delta_e = pitch_hold(theta_c, theta, q, P);
+    delta_e = pitch_attitude_hold(theta_c, theta, q, P);
     % artificially saturation delta_t
     delta_t = sat(delta_t,1,0);
  

@@ -57,6 +57,19 @@ P.M             = 50;
 P.epsilon       = 0.1592;
 P.alpha0        = 0.4712;
 
+% Set control surface limits
+P.delta_e_up = 45*pi/180;
+P.delta_e_down = -45*pi/180;
+
+P.delta_a_up = 30*pi/180;
+P.delta_a_down = -30*pi/180;
+
+P.delta_r_up = 45*pi/180;
+P.delta_r_down = -45*pi/180;
+
+P.delta_t_up = 1;
+P.delta_t_down = 0;
+
 % Gamma values
 P.Gamma = P.Jx*P.Jz - P.Jxz^2;
 
