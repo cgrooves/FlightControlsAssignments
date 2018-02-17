@@ -79,7 +79,7 @@ kp_h = 2*zeta_h*wn_h/(K_theta_DC*Va);
 
 %%%DESIGN PARAMETERS%%%%%%
 W_V2 = 15;
-zeta_V2 = 0.7;
+zeta_V2 = .7;
 %%%END%%%%%%%%%%%%%%%%%%%%
 
 wn_V2 = wn_theta/W_V2;
@@ -95,15 +95,11 @@ a_V1 = P.rho*Va*P.S_wing/P.mass*(P.C_D_0 + P.C_D_alpha*alpha_trim + ...
 a_V2 = P.rho*P.S_prop*P.C_prop*P.k_motor^2*delta_t_trim/P.mass;
 a_V3 = P.g*cos(x_trim(8) - x_trim(9));
 
-ki_V2 = -wn_V2^2/(K_theta_DC*P.g);
+ki_V2 = wn_V2^2/(K_theta_DC*P.g);
 kp_V2 = (a_V1 - 2*zeta_V2*wn_V2)/(K_theta_DC*P.g);
 
 %% Airspeed Hold with Throttle
 
 %%%DESIGN PARAMETERS%%%%%%
-wn_V = 4;
-zeta_V = 0.95;
-%%%END%%%%%%%%%%%%%%%%%%%%
 
-ki_V = wn_V^2/a_V2;
-kp_V = (2*zeta_V*wn_V - a_V1)/a_V2;
+%%%END%%%%%%%%%%%%%%%%%%%%
