@@ -353,14 +353,40 @@ function phi_c = course_hold(chi_c, chi, r, flag, P)
 end
 
 % SLIDESLIP HOLD************************************************
-function delta_r = sideslip_hold()
+function delta_r = sideslip_hold(beta,flag,P)
+    persistent beta_integrator;
+    persistent beta_error_d1;
+    
+    if flag == 1
+        beta_integrator = 0;
+        beta_error_d1 = 0;
+    end
+    
+    % discrete integrator
+    beta_integrator = beta_integrator + P.Ts/2*(beta + beta_error_d1);
+    
+    % compute output command and saturate
+    delta_r = sat(-kp_beta*beta - ki_beta*beta_integrator, P.delta_r_up,...
+        P.delta_r_down);
+    
+    beta_error_d1 = beta; % store old error value
+    
+    % integrator anti-windup
+    if ki_beta ~= 0
+        u_unsat = kp_beta*beta + ki_beta*beta_integrator;
+        beta_integrator = beta_integrator + P.Ts/ki_beta*(delta_r - u_unsat);
+    end
+end
+
+% PITCH ALTITUDE HOLD************************************
+function delta_e = pitch_attitude_hold(phi_c, phi, q, P)
+
+    delta_e = sat(kp_theta*(phi_c - phi) - kd_theta*q,...
+        P.delta_e_up,P.delta_e_down);
 
 end
 
-function delta_e = pitch_attitude_hold()
-
-end
-
+% ALTITUDE HOLD USING PITCH **********************************
 function phi_c = altitude_hold_pitch()
 
 end
