@@ -343,16 +343,15 @@ function phi_c = course_hold(chi_c, chi, r, flag, P)
     % compute output command and saturate
     phi_c = kp_chi*error + ki_chi*chi_integrator;
     
-    chi_error_d1 = error; % store old error value
+    phi_error_d1 = error; % store old error value
     
     % integrator anti-windup
-    if ki_chi ~= 0
-        u_unsat = kp_chi*error + ki_chi*chi_integrator;
-        chi_integrator = chi_integrator + P.Ts/ki_chi*(phi_c - u_unsat);
+    if ki_phi ~= 0
+        u_unsat = kp_phi*error + ki_phi*phi_integrator + kd*p;
+        phi_integrator = phi_integrator + P.Ts/ki_phi*(delta_a - u_unsat);
     end
 end
 
-% SLIDESLIP HOLD************************************************
 function delta_r = sideslip_hold()
 
 end
