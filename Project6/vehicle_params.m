@@ -70,6 +70,11 @@ P.delta_r_down = -45*pi/180;
 P.delta_t_up = 1;
 P.delta_t_down = 0;
 
+% Take-off Values
+P.altitude_hold_zone = 500;
+P.altitude_take_off_zone = 200;
+P.theta_take_off = 15*pi/180;
+
 % Gamma values
 P.Gamma = P.Jx*P.Jz - P.Jxz^2;
 
@@ -99,7 +104,7 @@ P.C_r_delta_r = P.Gamma4*P.C_ell_delta_r + P.Gamma8*P.C_n_delta_r;
 %%%%%%%%%%%%%%%%%%%%%%%%
 % Trim conditions
 %%%%%%%%%%%%%%%%%%%%%%%%
-P.Va0 = 35; % initial airspeed
+P.Va0 = 17; % initial airspeed
 gamma = 5*pi/180; % initial flight path angle
 R = inf; % initial turn radiusP.Va0 = 17;
 
@@ -152,6 +157,8 @@ P.r0 = x_trim(12);
 % compute different transfer functions
 [T_phi_delta_a,T_chi_phi,T_theta_delta_e,T_h_theta,T_h_Va,T_Va_delta_t,T_Va_theta,T_v_delta_r]...
     = compute_tf_model(x_trim,u_trim,P);
+
+run('compute_gains.m')
 % 
 % % linearize the equations of motion around trim conditions
 %[A_lon, B_lon, A_lat, B_lat] = compute_ss_model('mavsim_trim',x_trim,u_trim);

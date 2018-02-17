@@ -14,8 +14,8 @@ function y = autopilot(uu,P)
 %    pe       = uu(2+NN);  % inertial East position
     h        = uu(3+NN);  % altitude
     Va       = uu(4+NN);  % airspeed
-%    alpha    = uu(5+NN);  % angle of attack
-%    beta     = uu(6+NN);  % side slip angle
+    alpha    = uu(5+NN);  % angle of attack
+    beta_air     = uu(6+NN);  % side slip angle
     phi      = uu(7+NN);  % roll angle
     theta    = uu(8+NN);  % pitch angle
     chi      = uu(9+NN);  % course angle
@@ -44,7 +44,7 @@ function y = autopilot(uu,P)
         case 1,
            [delta, x_command] = autopilot_tuning(Va_c,h_c,chi_c,Va,h,chi,phi,theta,p,q,r,t,P);
         case 2,
-           [delta, x_command] = autopilot_uavbook(Va_c,h_c,chi_c,Va,h,chi,phi,theta,p,q,r,t,P);
+           [delta, x_command] = autopilot_uavbook(Va_c,h_c,chi_c,Va,h,chi,phi,theta,p,q,r,t,P,beta_air,alpha);
         case 3,
                [delta, x_command] = autopilot_TECS(Va_c,h_c,chi_c,Va,h,chi,phi,theta,p,q,r,t,P);
     end
@@ -158,20 +158,20 @@ end
 % autopilot_uavbook
 %   - autopilot defined in the uavbook
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [delta, x_command] = autopilot_uavbook(Va_c,h_c,chi_c,Va,h,chi,phi,theta,p,q,r,t,P)
+function [delta, x_command] = autopilot_uavbook(Va_c,h_c,chi_c,Va,h,chi,phi,theta,p,q,r,t,P,beta_air,alpha)
 
     %----------------------------------------------------------
     % lateral autopilot
     if t==0
         % assume no rudder, therefore set delta_r=0
-        delta_r = 0;
-        sideslip_hold(beta, 1, P);
+        % delta_r = 0;
+        delta_r = sideslip_hold(beta_air, 1, P);
         phi_c   = course_hold(chi_c, chi, r, 1, P);
         delta_a = roll_hold(phi_c, phi, p, 1, P);
 
     else
         phi_c   = course_hold(chi_c, chi, r, 0, P);
-        delta_r = sideslip_hold(beta, 0, P);
+        delta_r = sideslip_hold(beta_air, 0, P);
     end
     delta_a = roll_hold(phi_c, phi, p, 0, P);     
   
@@ -323,15 +323,15 @@ function delta_a = roll_hold(phi_c, phi, p, flag, P)
     phi_integrator = phi_integrator + P.Ts/2*(error + phi_error_d1);
     
     % compute output command and saturate
-    delta_a = sat(kp_phi*error + ki_phi*phi_integrator - kd_phi*p...
+    delta_a = sat(P.kp_phi*error + P.ki_phi*phi_integrator - P.kd_phi*p...
         ,P.delta_a_up,P.delta_a_down);
     
     phi_error_d1 = error; % store old error value
     
     % integrator anti-windup
-    if ki_phi ~= 0
-        u_unsat = kp_phi*error + ki_phi*phi_integrator + kd*p;
-        phi_integrator = phi_integrator + P.Ts/ki_phi*(delta_a - u_unsat);
+    if P.ki_phi ~= 0
+        u_unsat = P.kp_phi*error + P.ki_phi*phi_integrator + P.kd_phi*p;
+        phi_integrator = phi_integrator + P.Ts/P.ki_phi*(delta_a - u_unsat);
     end
 end
 
@@ -351,7 +351,7 @@ function phi_c = course_hold(chi_c, chi, r, flag, P)
     chi_integrator = chi_integrator + P.Ts/2*(error + chi_error_d1);
     
     % compute output command and saturate
-    phi_c = kp_chi*error + ki_chi*chi_integrator;
+    phi_c = P.kp_chi*error + P.ki_chi*chi_integrator;
     
     chi_error_d1 = error; % store old error value
     
@@ -363,7 +363,7 @@ function phi_c = course_hold(chi_c, chi, r, flag, P)
 end
 
 % SLIDESLIP HOLD************************************************
-function delta_r = sideslip_hold(beta,flag,P)
+function delta_r = sideslip_hold(beta_air,flag,P)
     persistent beta_integrator;
     persistent beta_error_d1;
     
@@ -373,25 +373,25 @@ function delta_r = sideslip_hold(beta,flag,P)
     end
     
     % discrete integrator
-    beta_integrator = beta_integrator + P.Ts/2*(beta + beta_error_d1);
+    beta_integrator = beta_integrator + P.Ts/2*(beta_air + beta_error_d1);
     
     % compute output command and saturate
-    delta_r = sat(-kp_beta*beta - ki_beta*beta_integrator, P.delta_r_up,...
+    delta_r = sat(-P.kp_beta*beta_air - P.ki_beta*beta_integrator, P.delta_r_up,...
         P.delta_r_down);
     
-    beta_error_d1 = beta; % store old error value
+    beta_error_d1 = beta_air; % store old error value
     
     % integrator anti-windup
-    if ki_beta ~= 0
-        u_unsat = kp_beta*beta + ki_beta*beta_integrator;
-        beta_integrator = beta_integrator + P.Ts/ki_beta*(delta_r - u_unsat);
+    if P.ki_beta ~= 0
+        u_unsat = P.kp_beta*beta_air + P.ki_beta*beta_integrator;
+        beta_integrator = beta_integrator + P.Ts/P.ki_beta*(delta_r - u_unsat);
     end
 end
 
 % PITCH ALTITUDE HOLD************************************
 function delta_e = pitch_attitude_hold(phi_c, phi, q, P)
 
-    delta_e = sat(kp_theta*(phi_c - phi) - kd_theta*q,...
+    delta_e = sat(P.kp_theta*(phi_c - phi) - P.kd_theta*q,...
         P.delta_e_up,P.delta_e_down);
 
 end
@@ -412,7 +412,7 @@ function theta_c = altitude_hold_pitch(h_c, h, flag, P)
     h_integrator = h_integrator + P.Ts/2*(error + h_error_d1);
     
     % compute output command
-    theta_c = kp_h*error + ki_h*h_integrator;
+    theta_c = P.kp_h*error + P.ki_h*h_integrator;
     
     h_error_d1 = error; % store old error value
     
@@ -439,7 +439,7 @@ function theta_c = airspeed_hold_pitch(Va_c, Va, flag, P)
     Va_integrator = Va_integrator + P.Ts/2*(error + Va_error_d1);
     
     % compute output command and saturate
-    theta_c = kp_V2*error + ki_V2*Va_integrator;
+    theta_c = P.kp_V2*error + P.ki_V2*Va_integrator;
     
     Va_error_d1 = error; % store old error value
     
@@ -466,14 +466,14 @@ function delta_t = airspeed_hold_throttle(Va_c, Va, flag, P)
     Va_integrator = Va_integrator + P.Ts/2*(error + Va_error_d1);
     
     % compute output command and saturate
-    delta_t = sat(P.u_trim(4) + kp_V*error + ki_V*Va_integrator,1,0);
+    delta_t = sat(P.u_trim(4) + P.kp_V*error + P.ki_V*Va_integrator,1,0);
     
     Va_error_d1 = error; % store old error value
     
     % integrator anti-windup
-    if ki_V ~= 0
-        u_unsat = kp_V*error + ki_V*Va_integrator;
-        Va_integrator = Va_integrator + P.Ts/ki_V*(theta_c - u_unsat);
+    if P.ki_V ~= 0
+        u_unsat = P.kp_V*error + P.ki_V*Va_integrator;
+        Va_integrator = Va_integrator + P.Ts/P.ki_V*(delta_t - u_unsat);
     end
 
 end
@@ -486,9 +486,9 @@ end
 %   - saturation function
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function out = sat(in, up_limit, low_limit)
-  if in > up_limit,
+  if in > up_limit
       out = up_limit;
-  elseif in < low_limit;
+  elseif in < low_limit
       out = low_limit;
   else
       out = in;
