@@ -345,11 +345,11 @@ function phi_c = course_hold(chi_c, chi, r, flag, P)
     
     chi_error_d1 = error; % store old error value
     
-    % integrator anti-windup
-    if ki_chi ~= 0
-        u_unsat = kp_chi*error + ki_chi*chi_integrator;
-        chi_integrator = chi_integrator + P.Ts/ki_chi*(phi_c - u_unsat);
-    end
+%     % integrator anti-windup
+%     if ki_chi ~= 0
+%         u_unsat = kp_chi*error + ki_chi*chi_integrator;
+%         chi_integrator = chi_integrator + P.Ts/ki_chi*(phi_c - u_unsat);
+%     end
 end
 
 % SLIDESLIP HOLD************************************************
@@ -407,10 +407,10 @@ function theta_c = altitude_hold_pitch(h_c, h, flag, P)
     h_error_d1 = error; % store old error value
     
     % integrator anti-windup
-    if ki_h ~= 0
-        u_unsat = kp_h*error + ki_h*h_integrator;
-        h_integrator = h_integrator + P.Ts/ki_h*(theta_c - u_unsat);
-    end
+%     if ki_h ~= 0
+%         u_unsat = kp_h*error + ki_h*h_integrator;
+%         h_integrator = h_integrator + P.Ts/ki_h*(theta_c - u_unsat);
+%     end
 end
 
 % AIRSPEED HOLD USING PITCH ******************************************
@@ -433,11 +433,11 @@ function theta_c = airspeed_hold_pitch(Va_c, Va, flag, P)
     
     Va_error_d1 = error; % store old error value
     
-    % integrator anti-windup
-    if ki_V2 ~= 0
-        u_unsat = kp_V2*error + ki_V2*Va_integrator;
-        Va_integrator = Va_integrator + P.Ts/ki_V2*(theta_c - u_unsat);
-    end
+%     % integrator anti-windup
+%     if ki_V2 ~= 0
+%         u_unsat = kp_V2*error + ki_V2*Va_integrator;
+%         Va_integrator = Va_integrator + P.Ts/ki_V2*(theta_c - u_unsat);
+%     end
 end
 
 % AIRSPEED HOLD USING THROTTLE ********************************
