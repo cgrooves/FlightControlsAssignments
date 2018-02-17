@@ -53,8 +53,16 @@ function out = forces_moments(x, delta, wind, P)
     % Compute airspeed, angle of attack, sideslip angle
     Va = sqrt(u_r^2 + v_r^2 + w_r^2);
     alpha = atan2(w_r,u_r);
-    beta = asin(v_r / Va);
-        
+    
+    if Va ~= 0
+        beta = asin(v_r / Va);
+    else
+        beta = 0;
+        Va = .0001;
+    end
+    
+%     beta = asin(v_r / Va);
+    
     % nonlinear drag model
     C_D_alpha = P.C_D_p + (P.C_L_0 + P.C_L_alpha*alpha)^2/(pi*P.e*P.AR);
     
