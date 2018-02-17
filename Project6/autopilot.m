@@ -387,15 +387,84 @@ function delta_e = pitch_attitude_hold(phi_c, phi, q, P)
 end
 
 % ALTITUDE HOLD USING PITCH **********************************
-function phi_c = altitude_hold_pitch()
-
+function theta_c = altitude_hold_pitch(h_c, h, flag, P)
+    persistent h_integrator;
+    persistent h_error_d1;
+    
+    if flag == 1
+        h_integrator = 0;
+        h_error_d1 = 0;
+    end
+    
+    error = h_c - h;
+    
+    % discrete integrator
+    h_integrator = h_integrator + P.Ts/2*(error + h_error_d1);
+    
+    % compute output command
+    theta_c = kp_h*error + ki_h*h_integrator;
+    
+    h_error_d1 = error; % store old error value
+    
+    % integrator anti-windup
+    if ki_h ~= 0
+        u_unsat = kp_h*error + ki_h*h_integrator;
+        h_integrator = h_integrator + P.Ts/ki_h*(theta_c - u_unsat);
+    end
 end
 
-function phi_c = airspeed_hold_pitch()
-
+% AIRSPEED HOLD USING PITCH ******************************************
+function theta_c = airspeed_hold_pitch(Va_c, Va, flag, P)
+    persistent Va_integrator;
+    persistent Va_error_d1;
+    
+    if flag == 1
+        Va_integrator = 0;
+        Va_error_d1 = 0;
+    end
+    
+    error = Va_c - Va;
+    
+    % discrete integrator
+    Va_integrator = Va_integrator + P.Ts/2*(error + Va_error_d1);
+    
+    % compute output command and saturate
+    theta_c = kp_V2*error + ki_V2*Va_integrator;
+    
+    Va_error_d1 = error; % store old error value
+    
+    % integrator anti-windup
+    if ki_V2 ~= 0
+        u_unsat = kp_V2*error + ki_V2*Va_integrator;
+        Va_integrator = Va_integrator + P.Ts/ki_V2*(theta_c - u_unsat);
+    end
 end
 
-function delta_t = airspeed_hold_throttle()
+% AIRSPEED HOLD USING THROTTLE ********************************
+function delta_t = airspeed_hold_throttle(Va_c, Va, flag, P)
+    persistent Va_integrator;
+    persistent Va_error_d1;
+    
+    if flag == 1
+        Va_integrator = 0;
+        Va_error_d1 = 0;
+    end
+    
+    error = Va_c - Va;
+    
+    % discrete integrator
+    Va_integrator = Va_integrator + P.Ts/2*(error + Va_error_d1);
+    
+    % compute output command and saturate
+    delta_t = sat(P.u_trim(4) + kp_V*error + ki_V*Va_integrator,1,0);
+    
+    Va_error_d1 = error; % store old error value
+    
+    % integrator anti-windup
+    if ki_V ~= 0
+        u_unsat = kp_V*error + ki_V*Va_integrator;
+        Va_integrator = Va_integrator + P.Ts/ki_V*(theta_c - u_unsat);
+    end
 
 end
 
