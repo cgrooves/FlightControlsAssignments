@@ -74,10 +74,21 @@ P.C_p_0 = P.Gamma3*P.C_ell_0 + P.Gamma4*P.C_n_0;
 P.C_p_beta = P.Gamma3*P.C_ell_beta + P.Gamma4*P.C_n_beta;
 P.C_p_p = P.Gamma3*P.C_ell_p + P.Gamma4*P.C_n_p;
 P.C_p_r = P.Gamma3*P.C_ell_r + P.Gamma4*P.C_n_r;
-P.C_p_delta_a = P.Gamma3*P.C_
+P.C_p_delta_a = P.Gamma3*P.C_ell_delta_a + P.Gamma4*P.C_n_delta_a;
+P.C_p_delta_r = P.Gamma3*P.C_ell_delta_r + P.Gamma4*P.C_n_delta_r;
+P.C_r_0 = P.Gamma4*P.C_ell_0 + P.Gamma8*P.C_n_0;
+P.C_r_beta = P.Gamma4*P.C_ell_beta + P.Gamma8*P.C_n_beta;
+P.C_r_p = P.Gamma4*P.C_ell_p + P.Gamma8*P.C_n_p;
+P.C_r_r = P.Gamma4*P.C_ell_r + P.Gamma8*P.C_n_r;
+P.C_r_delta_a = P.Gamma4*P.C_ell_delta_a + P.Gamma8*P.C_n_delta_a;
+P.C_r_delta_r = P.Gamma4*P.C_ell_delta_r + P.Gamma8*P.C_n_delta_r;
 
-% initial conditions
-P.Va0 = 17;
+%%%%%%%%%%%%%%%%%%%%%%%%
+% Trim conditions
+%%%%%%%%%%%%%%%%%%%%%%%%
+P.Va0 = 35; % initial airspeed
+gamma = 5*pi/180; % initial flight path angle
+R = inf; % initial turn radiusP.Va0 = 17;
 
 P.pn0    =  -1000; % initial North position
 P.pe0    =  0; % initial East position
@@ -105,13 +116,6 @@ P.sigma_w = .7;
 
 P.Ts = 0.1;
 
-%%%%%%%%%%%%%%%%%%%%%%%%
-% Trim conditions
-%%%%%%%%%%%%%%%%%%%%%%%%
-P.Va0 = 35; % initial airspeed
-gamma = 5*pi/180; % initial flight path angle
-R = inf; % initial turn radius
-
 % compute trim
 [x_trim, u_trim] = compute_trim('mavsim_trim',P.Va0,gamma,R);
 P.u_trim = u_trim;
@@ -137,4 +141,4 @@ P.r0 = x_trim(12);
     = compute_tf_model(x_trim,u_trim,P);
 % 
 % % linearize the equations of motion around trim conditions
-[A_lon, B_lon, A_lat, B_lat] = compute_ss_model('mavsim_trim',x_trim,u_trim);
+%[A_lon, B_lon, A_lat, B_lat] = compute_ss_model('mavsim_trim',x_trim,u_trim);

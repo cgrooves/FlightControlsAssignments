@@ -81,4 +81,7 @@ M_w = w*P.rho*P.S_wing*P.c/P.Jy*(P.C_m_0 + P.C_m_alpha*alpha_trim + ...
     P.C_m_delta_e*delta_e_trim) - P.rho*P.S_wing*P.c*P.C_m_alpha*u/(2*P.Jy) ...
     + P.rho*P.S_wing*P.c^2*P.C_m_p*q_trim*w/(4*P.Jy*Va_trim);
 M_q = P.rho*Va_trim*P.S_wing*P.c^2*P.C_m_q/(4*P.Jy);
-M_delta_e = P.rho*Va_trim^2*P.S_wing*P.c*P.C_m_delta_
+M_delta_e = P.rho*Va_trim^2*P.S_wing*P.c*P.C_m_delta_e/(2*P.Jy);
+
+% Matrices
+
