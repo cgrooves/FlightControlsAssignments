@@ -3,7 +3,7 @@ P.g = 9.81;
    
 % Using Aerosonde UAV parameters, Appendix E.
 % physical parameters of airframe
-P.mass = 13.5;
+P.mass = 25;
 P.Jx   = 0.8244;
 P.Jy   = 1.135;
 P.Jz   = 1.759;
@@ -23,6 +23,7 @@ P.AR            = P.b^2/P.S_wing;
 
 P.C_L_0         = 0.28;
 P.C_L_alpha     = 3.45;
+% P.C_L_alpha = pi*P.AR/(1+sqrt(1+(P.AR/2)^2)); % approximation given
 P.C_L_q         = 0.0;
 P.C_L_delta_e   = -0.36;
 P.C_D_0         = 0.03;
@@ -75,7 +76,7 @@ P.altitude_hold_zone = 500;
 P.altitude_take_off_zone = 200;
 P.theta_take_off = 15*pi/180;
 
-% Gamma values
+% Gamma values % Checked*
 P.Gamma = P.Jx*P.Jz - P.Jxz^2;
 
 P.Gamma1 = P.Jxz*(P.Jx - P.Jy + P.Jz)/P.Gamma;
@@ -104,8 +105,8 @@ P.C_r_delta_r = P.Gamma4*P.C_ell_delta_r + P.Gamma8*P.C_n_delta_r;
 %%%%%%%%%%%%%%%%%%%%%%%%
 % Trim conditions
 %%%%%%%%%%%%%%%%%%%%%%%%
-P.Va0 = 17; % initial airspeed
-gamma = 5*pi/180; % initial flight path angle
+P.Va0 = 35; % initial airspeed
+gamma = 0*pi/180; % initial flight path angle
 R = inf; % initial turn radiusP.Va0 = 17;
 
 P.pn0    =  -1000; % initial North position
@@ -132,7 +133,7 @@ P.sigma_u = 1.06;
 P.sigma_v = 1.06;
 P.sigma_w = .7;
 
-P.Ts = 0.1;
+P.Ts = 0.01;
 
 % compute trim
 [x_trim, u_trim] = compute_trim('mavsim_trim',P.Va0,gamma,R);

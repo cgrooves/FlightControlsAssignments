@@ -37,8 +37,8 @@ function out = forces_moments(x, delta, wind, P)
     w_wg    = wind(6); % gust along body z-axis
     
     % compute wind data in NED
-    w_n = cos(theta)*cos(psi)*w_ns + cos(theta)*sin(psi)*w_es - sin(theta)*w_ds;
-    w_e = (sin(phi)*sin(theta)*cos(psi)-cos(phi)*sin(psi))*w_ns + (sin(phi)*sin(theta)*sin(psi)+cos(phi)*cos(psi))*w_es + sin(phi)*cos(theta)*w_ds;
+    u_w = cos(theta)*cos(psi)*w_ns + cos(theta)*sin(psi)*w_es - sin(theta)*w_ds + u_wg;
+    v_w = (sin(phi)*sin(theta)*cos(psi)-cos(phi)*sin(psi))*w_ns + (sin(phi)*sin(theta)*sin(psi)+cos(phi)*cos(psi))*w_es + sin(phi)*cos(theta)*w_ds;
     w_d = (cos(phi)*sin(theta)*cos(psi)+sin(phi)*sin(psi))*w_ns + (cos(phi)*sin(theta)*sin(psi)-sin(phi)*cos(psi))*w_es + cos(phi)*cos(theta)*w_ds;
     
     % compute air data

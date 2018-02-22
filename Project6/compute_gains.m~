@@ -52,17 +52,16 @@ delta_e_max = 45*pi/180;
 
 %%%DESIGN PARAMETERS%%%%%%
 e_theta_max = 45*pi/180;
-zeta_theta = .75;
+zeta_theta = ;
 %%%END%%%%%%%%%%%%%%%%%%%%
 
 a_theta1 = -P.rho*Va^2*P.c*P.S_wing/(2*P.Jy)*P.C_m_q*P.c/(2*Va);
 a_theta2 = -P.rho*Va^2*P.c*P.S_wing*P.C_m_alpha/(2*P.Jy);
 a_theta3 = P.rho*Va^2*P.c*P.S_wing/(2*P.Jy)*P.C_m_delta_e;
 
-% P.kp_theta = delta_e_max/e_theta_max*sign(a_theta3);
-P.kp_theta = -4.5;
+P.kp_theta = delta_e_max/e_theta_max*sign(a_theta3);
 wn_theta = sqrt(a_theta2 + P.kp_theta*a_theta3);
-P.kd_theta = -0.77; %-(2*zeta_theta*wn_theta - a_theta1)/a_theta3;
+P.kd_theta = (2*zeta_theta*wn_theta - a_theta1)/a_theta3;
 
 P.K_theta_DC = (P.kp_theta*a_theta3)/(a_theta2 + P.kp_theta*a_theta3);
 

@@ -31,7 +31,7 @@ function y = autopilot(uu,P)
 %    bz       = uu(19+NN); % z-gyro bias
     NN = NN+19;
     Va_c     = uu(1+NN);  % commanded airspeed (m/s)
-    h_c      = uu(2+NN);  % commanded altitude (m)
+    theta_c      = uu(2+NN);  % commanded altitude (m)
     chi_c    = uu(3+NN);  % commanded course (rad)
     NN = NN+3;
     t        = uu(1+NN);   % time
@@ -44,7 +44,7 @@ function y = autopilot(uu,P)
         case 1,
            [delta, x_command] = autopilot_tuning(Va_c,h_c,chi_c,Va,h,chi,phi,theta,p,q,r,t,P);
         case 2,
-           [delta, x_command] = autopilot_uavbook(Va_c,h_c,chi_c,Va,h,chi,phi,theta,p,q,r,t,P,beta_air,alpha);
+           [delta, x_command] = autopilot_uavbook(Va_c,theta_c,chi_c,Va,h,chi,phi,theta,p,q,r,t,P,beta_air,alpha);
         case 3,
                [delta, x_command] = autopilot_TECS(Va_c,h_c,chi_c,Va,h,chi,phi,theta,p,q,r,t,P);
     end
@@ -158,7 +158,7 @@ end
 % autopilot_uavbook
 %   - autopilot defined in the uavbook
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [delta, x_command] = autopilot_uavbook(Va_c,h_c,chi_c,Va,h,chi,phi,theta,p,q,r,t,P,beta_air,alpha)
+function [delta, x_command] = autopilot_uavbook(Va_c,theta_c,chi_c,Va,h,chi,phi,theta,p,q,r,t,P,beta_air,alpha)
 
     %----------------------------------------------------------
     % lateral autopilot
@@ -173,7 +173,8 @@ function [delta, x_command] = autopilot_uavbook(Va_c,h_c,chi_c,Va,h,chi,phi,thet
         phi_c   = course_hold(chi_c, chi, r, 0, P);
         delta_r = sideslip_hold(beta_air, 0, P);
     end
-    delta_a = roll_hold(phi_c, phi, p, 0, P);     
+    
+    delta_a = roll_hold(phi_c, phi, p, 0, P);
   
     
     %----------------------------------------------------------
@@ -183,41 +184,42 @@ function [delta, x_command] = autopilot_uavbook(Va_c,h_c,chi_c,Va,h,chi,phi,thet
     persistent altitude_state;
     persistent initialize_integrator;
     % initialize persistent variable
-    if t==0
-        if h<=P.altitude_take_off_zone    
-            altitude_state = 1;
-        elseif h<=h_c-P.altitude_hold_zone
-            altitude_state = 2;
-        elseif h>=h_c+P.altitude_hold_zone
-            altitude_state = 3;
-        else
-            altitude_state = 4;
-        end
-        initialize_integrator = 1;
-        airspeed_hold_pitch(Va_c, Va, 1, P);
-        airspeed_hold_throttle(Va_c, Va, 1, P);
-        altitude_hold_pitch(h_c, h, 1, P);
-    end
+%     if t==0
+%         if h<=P.altitude_take_off_zone    
+%             altitude_state = 1;
+%         elseif h<=h_c-P.altitude_hold_zone
+%             altitude_state = 2;
+%         elseif h>=h_c+P.altitude_hold_zone
+%             altitude_state = 3;
+%         else
+%             altitude_state = 4;
+%         end
+%         initialize_integrator = 1;
+%         airspeed_hold_pitch(Va_c, Va, 1, P);
+%         airspeed_hold_throttle(Va_c, Va, 1, P);
+%         altitude_hold_pitch(h_c, h, 1, P);
+%     end
     
     % implement state machine
-    switch altitude_state
-        case 1  % in take-off zone
-            delta_t = 1;
-            theta_c = P.theta_take_off;
-        case 2  % climb zone
-             delta_t = 1;
-             theta_c = airspeed_hold_pitch(Va_c, Va, 0, P);
-        case 3 % descend zone
-            delta_t = 0;
-            theta_c = airspeed_hold_pitch(Va_c, Va, 0, P);
-        case 4 % altitude hold zone
-            delta_t = airspeed_hold_throttle(Va_c, Va, 0, P);
-            theta_c = altitude_hold_pitch(h_c, h, q, P);
-    end
-    
-    delta_e = pitch_attitude_hold(theta_c, theta, q, P);
+%     switch altitude_state
+%         case 1  % in take-off zone
+%             delta_t = 1;
+%             theta_c = P.theta_take_off;
+%         case 2  % climb zone
+%              delta_t = 1;
+%              theta_c = airspeed_hold_pitch(Va_c, Va, 0, P);
+%         case 3 % descend zone
+%             delta_t = 0;
+%             theta_c = airspeed_hold_pitch(Va_c, Va, 0, P);
+%         case 4 % altitude hold zone
+%             delta_t = airspeed_hold_throttle(Va_c, Va, 0, P);
+%             theta_c = altitude_hold_pitch(h_c, h, q, P);
+%     end
+   % q=0;
+    delta_e = pitch_hold(theta_c, theta, q, P);
     % artificially saturation delta_t
-    delta_t = sat(delta_t,1,0);
+%     delta_t = sat(delta_t,1,0);
+    delta_t = 1;
  
     
     %----------------------------------------------------------
@@ -229,7 +231,7 @@ function [delta, x_command] = autopilot_uavbook(Va_c,h_c,chi_c,Va,h,chi,phi,thet
     x_command = [...
         0;...                    % pn
         0;...                    % pe
-        h_c;...                  % h
+        0;...                  % h
         Va_c;...                 % Va
         0;...                    % alpha
         0;...                    % beta
@@ -356,10 +358,10 @@ function phi_c = course_hold(chi_c, chi, r, flag, P)
     chi_error_d1 = error; % store old error value
     
 %     % integrator anti-windup
-%     if ki_chi ~= 0
-%         u_unsat = kp_chi*error + ki_chi*chi_integrator;
-%         chi_integrator = chi_integrator + P.Ts/ki_chi*(phi_c - u_unsat);
-%     end
+    if P.ki_chi ~= 0
+        u_unsat = P.kp_chi*error + P.ki_chi*chi_integrator;
+        chi_integrator = chi_integrator + P.Ts/P.ki_chi*(phi_c - u_unsat);
+    end
 end
 
 % SLIDESLIP HOLD************************************************
@@ -389,9 +391,9 @@ function delta_r = sideslip_hold(beta_air,flag,P)
 end
 
 % PITCH ALTITUDE HOLD************************************
-function delta_e = pitch_attitude_hold(phi_c, phi, q, P)
+function delta_e = pitch_hold(theta_c, theta, q, P)
 
-    delta_e = sat(P.kp_theta*(phi_c - phi) - P.kd_theta*q,...
+    delta_e = sat(P.kp_theta*(theta_c - theta) + P.kd_theta*q,...
         P.delta_e_up,P.delta_e_down);
 
 end
@@ -417,10 +419,10 @@ function theta_c = altitude_hold_pitch(h_c, h, flag, P)
     h_error_d1 = error; % store old error value
     
     % integrator anti-windup
-%     if ki_h ~= 0
-%         u_unsat = kp_h*error + ki_h*h_integrator;
-%         h_integrator = h_integrator + P.Ts/ki_h*(theta_c - u_unsat);
-%     end
+    if P.ki_h ~= 0
+        u_unsat = P.kp_h*error + P.ki_h*h_integrator;
+        h_integrator = h_integrator + P.Ts/P.ki_h*(theta_c - u_unsat);
+    end
 end
 
 % AIRSPEED HOLD USING PITCH ******************************************
@@ -443,11 +445,11 @@ function theta_c = airspeed_hold_pitch(Va_c, Va, flag, P)
     
     Va_error_d1 = error; % store old error value
     
-%     % integrator anti-windup
-%     if ki_V2 ~= 0
-%         u_unsat = kp_V2*error + ki_V2*Va_integrator;
-%         Va_integrator = Va_integrator + P.Ts/ki_V2*(theta_c - u_unsat);
-%     end
+    % integrator anti-windup
+    if P.ki_V2 ~= 0
+        u_unsat = P.kp_V2*error + P.ki_V2*Va_integrator;
+        Va_integrator = Va_integrator + P.Ts/P.ki_V2*(theta_c - u_unsat);
+    end
 end
 
 % AIRSPEED HOLD USING THROTTLE ********************************
