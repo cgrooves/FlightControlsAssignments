@@ -86,9 +86,9 @@ P.C_r_delta_r = P.Gamma4*P.C_ell_delta_r + P.Gamma8*P.C_n_delta_r;
 %%%%%%%%%%%%%%%%%%%%%%%%
 % Trim conditions
 %%%%%%%%%%%%%%%%%%%%%%%%
-P.Va0 = 35; % initial airspeed
-gamma = 5*pi/180; % initial flight path angle
-R = 250; % initial turn radiusP.Va0 = 17;
+P.Va0 = 17; % initial airspeed
+gamma = 0*pi/180; % initial flight path angle
+R = Inf; % initial turn radiusP.Va0 = 17;
 
 P.pn0    =  -1000; % initial North position
 P.pe0    =  0; % initial East position
