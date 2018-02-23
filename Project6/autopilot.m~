@@ -183,8 +183,7 @@ function [delta, x_command] = autopilot_uavbook(Va_c,theta_c,chi_c,Va,h,chi,phi,
     % define persistent variable for state of altitude state machine
     persistent altitude_state;
     persistent initialize_integrator;
-    
-%     % initialize persistent variable
+    % initialize persistent variable
 %     if t==0
 %         if h<=P.altitude_take_off_zone    
 %             altitude_state = 1;
@@ -200,8 +199,8 @@ function [delta, x_command] = autopilot_uavbook(Va_c,theta_c,chi_c,Va,h,chi,phi,
 %         airspeed_hold_throttle(Va_c, Va, 1, P);
 %         altitude_hold_pitch(h_c, h, 1, P);
 %     end
-%     
-%     % implement state machine
+    
+    % implement state machine
 %     switch altitude_state
 %         case 1  % in take-off zone
 %             delta_t = 1;
@@ -216,8 +215,8 @@ function [delta, x_command] = autopilot_uavbook(Va_c,theta_c,chi_c,Va,h,chi,phi,
 %             delta_t = airspeed_hold_throttle(Va_c, Va, 0, P);
 %             theta_c = altitude_hold_pitch(h_c, h, q, P);
 %     end
-
-delta_e = pitch_hold(theta_c, theta, q, P);
+   % q=0;
+    delta_e = pitch_hold(theta_c, theta, q, P);
     
     %----------------------------------------------------------
     % create outputs
