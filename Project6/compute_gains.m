@@ -24,7 +24,7 @@ P.ki_phi = .03;
 Vg = Va;
 
 %%%DESIGN PARAMETERS%%%
-zeta_chi = .5;
+zeta_chi = .7;
 WX = 30;
 %%%END%%%%%%%%%%%%%%%%%
 
@@ -66,8 +66,6 @@ P.kd_theta = (2*zeta_theta*wn_theta - a_theta1)/a_theta3;
 RL_kptheta = tf(a_theta3,[1,(a_theta1+P.kd_theta*a_theta3),a_theta2]);
 RL_kdtheta = tf([a_theta3,0],[1,a_theta1,a_theta2 + P.kp_theta*a_theta3]);
 
-%rlocus(RL_kptheta);
-
 P.K_theta_DC = (P.kp_theta*a_theta3)/(a_theta2 + P.kp_theta*a_theta3);
 
 %% Altitude Hold Gains
@@ -85,8 +83,8 @@ P.kp_h = 2*zeta_h*wn_h/(P.K_theta_DC*Va);
 %% Airspeed Hold with Pitch
 
 %%%DESIGN PARAMETERS%%%%%%
-W_V2 = 30;
-zeta_V2 = 1.2;
+W_V2 = 15;
+zeta_V2 = .85;
 %%%END%%%%%%%%%%%%%%%%%%%%
 
 wn_V2 = wn_theta/W_V2;
