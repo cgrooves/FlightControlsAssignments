@@ -4,8 +4,8 @@ delta_a_max = pi/4;
 Va = sqrt(x_trim(4)^2+x_trim(5)^2+x_trim(6)); % m/s
 
 %%%DESIGN PARAMETERS%%%
-zeta_phi = 1.5;
-e_phi_max = 25*pi/180;
+zeta_phi = 1.2;
+e_phi_max = 45*pi/180;
 %%%END%%%%%%%%%%%%%%%%%
 
 a_phi1 = -P.rho*Va*P.S_wing*P.b^2*P.C_p_p/4;
@@ -24,7 +24,7 @@ P.ki_phi = .03;
 Vg = Va;
 
 %%%DESIGN PARAMETERS%%%
-zeta_chi = .5;
+zeta_chi = 1.2;
 WX = 30;
 %%%END%%%%%%%%%%%%%%%%%
 
@@ -37,8 +37,8 @@ P.ki_chi = wn_chi^2*Vg/P.g;
 delta_r_max = 45*pi/180;
 
 %%%DESIGN PARAMETERS%%%%%%
-e_beta_max = 5*pi/180;
-zeta_beta = 0.7;
+e_beta_max = 10*pi/180;
+zeta_beta = .7;
 %%%END%%%%%%%%%%%%%%%%%%%%
 
 a_beta1 = -P.rho*Va*P.S_wing/(2*P.mass)*P.C_Y_beta;
@@ -51,8 +51,8 @@ P.ki_beta = 1/a_beta2*((a_beta1 + a_beta2*P.kp_beta)/2/zeta_beta)^2;
 delta_e_max = 30*pi/180;
 
 %%%DESIGN PARAMETERS%%%%%%
-e_theta_max = 10*pi/180;
-zeta_theta = .8;
+e_theta_max = 35*pi/180;
+zeta_theta = 0.7;
 %%%END%%%%%%%%%%%%%%%%%%%%
 
 a_theta1 = -P.rho*Va^2*P.c*P.S_wing/(2*P.Jy)*P.C_m_q*P.c/(2*Va);
@@ -61,20 +61,18 @@ a_theta3 = P.rho*Va^2*P.c*P.S_wing/(2*P.Jy)*P.C_m_delta_e;
 
 P.kp_theta = delta_e_max/e_theta_max*sign(a_theta3);
 wn_theta = sqrt(a_theta2 + delta_e_max/e_theta_max*abs(a_theta3));
-P.kd_theta = -(2*zeta_theta*wn_theta - a_theta1)/a_theta3*0;
+P.kd_theta = (2*zeta_theta*wn_theta - a_theta1)/a_theta3;
 
 RL_kptheta = tf(a_theta3,[1,(a_theta1+P.kd_theta*a_theta3),a_theta2]);
 RL_kdtheta = tf([a_theta3,0],[1,a_theta1,a_theta2 + P.kp_theta*a_theta3]);
-
-rlocus(RL_kptheta);
 
 P.K_theta_DC = (P.kp_theta*a_theta3)/(a_theta2 + P.kp_theta*a_theta3);
 
 %% Altitude Hold Gains
 
 %%%DESIGN PARAMETERS%%%%%%
-zeta_h = 0.8;
-W_h = 15;
+zeta_h = .8;
+W_h = 30;
 %%%END%%%%%%%%%%%%%%%%%%%%
 
 wn_h = 1/W_h*wn_theta;
@@ -85,8 +83,8 @@ P.kp_h = 2*zeta_h*wn_h/(P.K_theta_DC*Va);
 %% Airspeed Hold with Pitch
 
 %%%DESIGN PARAMETERS%%%%%%
-W_V2 = 30;
-zeta_V2 = 1.2;
+W_V2 = 15;
+zeta_V2 = .85;
 %%%END%%%%%%%%%%%%%%%%%%%%
 
 wn_V2 = wn_theta/W_V2;

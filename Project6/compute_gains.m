@@ -4,8 +4,8 @@ delta_a_max = pi/4;
 Va = sqrt(x_trim(4)^2+x_trim(5)^2+x_trim(6)); % m/s
 
 %%%DESIGN PARAMETERS%%%
-zeta_phi = 1.5;
-e_phi_max = 25*pi/180;
+zeta_phi = 1.2;
+e_phi_max = 45*pi/180;
 %%%END%%%%%%%%%%%%%%%%%
 
 a_phi1 = -P.rho*Va*P.S_wing*P.b^2*P.C_p_p/4;
@@ -24,7 +24,7 @@ P.ki_phi = .03;
 Vg = Va;
 
 %%%DESIGN PARAMETERS%%%
-zeta_chi = .7;
+zeta_chi = .8;
 WX = 30;
 %%%END%%%%%%%%%%%%%%%%%
 
@@ -51,8 +51,8 @@ P.ki_beta = 1/a_beta2*((a_beta1 + a_beta2*P.kp_beta)/2/zeta_beta)^2;
 delta_e_max = 30*pi/180;
 
 %%%DESIGN PARAMETERS%%%%%%
-e_theta_max = 25*pi/180;
-zeta_theta = 1.5;
+e_theta_max = 35*pi/180;
+zeta_theta = 0.7;
 %%%END%%%%%%%%%%%%%%%%%%%%
 
 a_theta1 = -P.rho*Va^2*P.c*P.S_wing/(2*P.Jy)*P.C_m_q*P.c/(2*Va);
