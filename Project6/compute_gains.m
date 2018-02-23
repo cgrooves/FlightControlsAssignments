@@ -48,21 +48,25 @@ P.kp_beta = delta_r_max/e_beta_max*sign(a_beta2);
 P.ki_beta = 1/a_beta2*((a_beta1 + a_beta2*P.kp_beta)/2/zeta_beta)^2;
 
 %% Pitch Attitude Hold Gains
-delta_e_max = 45*pi/180;
+delta_e_max = 30*pi/180;
 
 %%%DESIGN PARAMETERS%%%%%%
 e_theta_max = 10*pi/180;
-zeta_theta = .75;
+zeta_theta = .9;
 %%%END%%%%%%%%%%%%%%%%%%%%
 
 a_theta1 = -P.rho*Va^2*P.c*P.S_wing/(2*P.Jy)*P.C_m_q*P.c/(2*Va);
 a_theta2 = -P.rho*Va^2*P.c*P.S_wing*P.C_m_alpha/(2*P.Jy);
 a_theta3 = P.rho*Va^2*P.c*P.S_wing/(2*P.Jy)*P.C_m_delta_e;
 
-% P.kp_theta = delta_e_max/e_theta_max*sign(a_theta3);
 P.kp_theta = delta_e_max/e_theta_max*sign(a_theta3);
-wn_theta = sqrt(a_theta2 + P.kp_theta*a_theta3);
-P.kd_theta = -(2*zeta_theta*wn_theta - a_theta1)/a_theta3;
+wn_theta = sqrt(a_theta2 + delta_e_max/e_theta_max*abs(a_theta3));
+P.kd_theta = (2*zeta_theta*wn_theta - a_theta1)/a_theta3;
+
+RL_kptheta = tf(a_theta3,[1,(a_theta1+P.kd_theta*a_theta3),a_theta2]);
+RL_kdtheta = tf([a_theta3,0],[1,a_theta1,a_theta2 + P.kp_theta*a_theta3]);
+
+%rlocus(RL_kptheta);
 
 P.K_theta_DC = (P.kp_theta*a_theta3)/(a_theta2 + P.kp_theta*a_theta3);
 
@@ -81,8 +85,8 @@ P.kp_h = 2*zeta_h*wn_h/(P.K_theta_DC*Va);
 %% Airspeed Hold with Pitch
 
 %%%DESIGN PARAMETERS%%%%%%
-W_V2 = 15;
-zeta_V2 = 0.7;
+W_V2 = 30;
+zeta_V2 = 1.2;
 %%%END%%%%%%%%%%%%%%%%%%%%
 
 wn_V2 = wn_theta/W_V2;
@@ -98,8 +102,8 @@ a_V1 = P.rho*Va*P.S_wing/P.mass*(P.C_D_0 + P.C_D_alpha*alpha_trim + ...
 a_V2 = P.rho*P.S_prop*P.C_prop*P.k_motor^2*delta_t_trim/P.mass;
 a_V3 = P.g*cos(x_trim(8) - x_trim(9));
 
-P.ki_V2 = -wn_V2^2/(P.K_theta_DC*P.g)*0;
-P.kp_V2 = (a_V1 - 2*zeta_V2*wn_V2)/(P.K_theta_DC*P.g)*0;
+P.ki_V2 = -wn_V2^2/(P.K_theta_DC*P.g);
+P.kp_V2 = (a_V1 - 2*zeta_V2*wn_V2)/(P.K_theta_DC*P.g);
 
 %% Airspeed Hold with Throttle
 

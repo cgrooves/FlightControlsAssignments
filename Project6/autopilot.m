@@ -64,7 +64,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [delta, x_command] = autopilot_tuning(Va_c,h_c,chi_c,Va,h,chi,phi,theta,p,q,r,t,P)
 
-    mode = 2;
+    mode = 3;
     switch mode
         case 1 % tune the roll loop
             phi_c = chi_c; % interpret chi_c to autopilot as course command
@@ -97,17 +97,23 @@ function [delta, x_command] = autopilot_tuning(Va_c,h_c,chi_c,Va,h,chi,phi,theta
             delta_t = P.u_trim(4);
             theta_c = 0;
         case 3, % tune the throttle to airspeed loop and pitch loop simultaneously
-            theta_c = 20*pi/180 + h_c;
+            theta_c = 20*pi/180; % + h_c;
             chi_c = 0;
             if t==0,
+                
                 phi_c   = course_hold(chi_c, chi, r, 1, P);
-                delta_t = airspeed_with_throttle_hold(Va_c, Va, 1, P);
+                delta_a = roll_hold(phi_c, phi, p, 1, P);
+
+                delta_t = airspeed_throttle_hold(Va_c, Va, 1, P);
            else
                 phi_c   = course_hold(chi_c, chi, r, 0, P);
-                delta_t = airspeed_with_throttle_hold(Va_c, Va, 0, P);
+                delta_a = roll_hold(phi_c, phi, p, 0, P);
+                
+                delta_t = airspeed_throttle_hold(Va_c, Va, 0, P);
             end
+            
             delta_e = pitch_hold(theta_c, theta, q, P);
-            delta_a = roll_hold(phi_c, phi, p, P);
+            
             delta_r = 0; % no rudder
             % use trim values for elevator and throttle while tuning the lateral autopilot
         case 4, % tune the pitch to airspeed loop 
@@ -400,7 +406,7 @@ end
 % PITCH ALTITUDE HOLD************************************
 function delta_e = pitch_hold(theta_c, theta, q, P)
 
-    delta_e = sat(P.kp_theta*(theta_c - theta) + P.kd_theta*q,...
+    delta_e = sat(P.kp_theta*(theta_c - theta) - P.kd_theta*q,...
         P.delta_e_up,P.delta_e_down);
 
 end
@@ -433,7 +439,7 @@ function theta_c = altitude_hold_pitch(h_c, h, flag, P)
 end
 
 % AIRSPEED HOLD USING PITCH ******************************************
-function theta_c = airspeed_hold_pitch(Va_c, Va, flag, P)
+function theta_c = airspeed_pitch_hold(Va_c, Va, flag, P)
     persistent Va_integrator;
     persistent Va_error_d1;
     
@@ -460,7 +466,7 @@ function theta_c = airspeed_hold_pitch(Va_c, Va, flag, P)
 end
 
 % AIRSPEED HOLD USING THROTTLE ********************************
-function delta_t = airspeed_hold_throttle(Va_c, Va, flag, P)
+function delta_t = airspeed_throttle_hold(Va_c, Va, flag, P)
     persistent Va_integrator;
     persistent Va_error_d1;
     
