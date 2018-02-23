@@ -31,12 +31,12 @@ function y = autopilot(uu,P)
 %    bz       = uu(19+NN); % z-gyro bias
     NN = NN+19;
     Va_c     = uu(1+NN);  % commanded airspeed (m/s)
-    theta_c      = uu(2+NN);  % commanded altitude (m)
+    h_c      = uu(2+NN);  % commanded altitude (m)
     chi_c    = uu(3+NN);  % commanded course (rad)
     NN = NN+3;
     t        = uu(1+NN);   % time
     
-    autopilot_version = 2;
+    autopilot_version = 1;
         % autopilot_version == 1 <- used for tuning
         % autopilot_version == 2 <- standard autopilot defined in book
         % autopilot_version == 3 <- Total Energy Control for longitudinal AP
@@ -64,11 +64,19 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [delta, x_command] = autopilot_tuning(Va_c,h_c,chi_c,Va,h,chi,phi,theta,p,q,r,t,P)
 
-    mode = 5;
+    mode = 2;
     switch mode
-        case 1, % tune the roll loop
+        case 1 % tune the roll loop
             phi_c = chi_c; % interpret chi_c to autopilot as course command
-            delta_a = roll_hold(phi_c, phi, p, P);
+            
+            flag = 0;
+            
+            if t == 0 
+                flag = 1;
+            end
+            
+            delta_a = roll_hold(phi_c,phi,p,flag,P);
+            
             delta_r = 0; % no rudder
             % use trim values for elevator and throttle while tuning the lateral autopilot
             delta_e = P.u_trim(1);
@@ -76,11 +84,13 @@ function [delta, x_command] = autopilot_tuning(Va_c,h_c,chi_c,Va,h,chi,phi,theta
             theta_c = 0;
         case 2, % tune the course loop
             if t==0,
-                phi_c   = course_hold(chi_c, chi, r, 1, P);
+                flag = 1;
             else
-                phi_c   = course_hold(chi_c, chi, r, 0, P);
-            end                
-            delta_a = roll_hold(phi_c, phi, p, P);
+                flag = 0;
+            end
+            
+            phi_c   = course_hold(chi_c, chi, r, flag, P);
+            delta_a = roll_hold(phi_c, phi, p, flag, P);
             delta_r = 0; % no rudder
             % use trim values for elevator and throttle while tuning the lateral autopilot
             delta_e = P.u_trim(1);

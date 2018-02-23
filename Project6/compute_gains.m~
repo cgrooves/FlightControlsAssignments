@@ -4,8 +4,8 @@ delta_a_max = pi/4;
 Va = sqrt(x_trim(4)^2+x_trim(5)^2+x_trim(6)); % m/s
 
 %%%DESIGN PARAMETERS%%%
-zeta_phi = 0.7;
-e_phi_max = 10*pi/180;
+zeta_phi = .9;
+e_phi_max = 15*pi/180;
 %%%END%%%%%%%%%%%%%%%%%
 
 a_phi1 = -P.rho*Va*P.S_wing*P.b^2*P.C_p_p/4;
@@ -16,16 +16,16 @@ wn_phi = sqrt(abs(a_phi2)*delta_a_max/e_phi_max);
 P.kp_phi = delta_a_max/e_phi_max*sign(a_phi2);
 P.kd_phi = (2*zeta_phi*wn_phi-a_phi1)/a_phi2;
 
-%rlocus(tf([a_phi2],[1,(a_phi1+a_phi2*P.kd_phi),a_phi2*P.kp_phi,0]))
+% rlocus(tf([a_phi2],[1,(a_phi1+a_phi2*P.kd_phi),a_phi2*P.kp_phi,0]))
 
-P.ki_phi = 0.3;
+P.ki_phi = .05;
 
 %% Course Hold Gains
 Vg = Va;
 
 %%%DESIGN PARAMETERS%%%
-zeta_chi = 1.2;
-WX = 10;
+zeta_chi = .4;
+WX = 30;
 %%%END%%%%%%%%%%%%%%%%%
 
 wn_chi = wn_phi/WX; % bandwidth separation
