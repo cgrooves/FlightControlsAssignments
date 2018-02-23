@@ -36,7 +36,7 @@ function y = autopilot(uu,P)
     NN = NN+3;
     t        = uu(1+NN);   % time
     
-    autopilot_version = 1;
+    autopilot_version = 2;
         % autopilot_version == 1 <- used for tuning
         % autopilot_version == 2 <- standard autopilot defined in book
         % autopilot_version == 3 <- Total Energy Control for longitudinal AP
@@ -44,7 +44,7 @@ function y = autopilot(uu,P)
         case 1,
            [delta, x_command] = autopilot_tuning(Va_c,h_c,chi_c,Va,h,chi,phi,theta,p,q,r,t,P);
         case 2,
-           [delta, x_command] = autopilot_uavbook(Va_c,theta_c,chi_c,Va,h,chi,phi,theta,p,q,r,t,P,beta_air,alpha);
+           [delta, x_command] = autopilot_uavbook(Va_c,h_c,chi_c,Va,h,chi,phi,theta,p,q,r,t,P,beta_air,alpha);
         case 3,
                [delta, x_command] = autopilot_TECS(Va_c,h_c,chi_c,Va,h,chi,phi,theta,p,q,r,t,P);
     end
@@ -178,23 +178,23 @@ end
 % autopilot_uavbook
 %   - autopilot defined in the uavbook
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [delta, x_command] = autopilot_uavbook(Va_c,theta_c,chi_c,Va,h,chi,phi,theta,p,q,r,t,P,beta_air,alpha)
+function [delta, x_command] = autopilot_uavbook(Va_c,h_c,chi_c,Va,h,chi,phi,theta,p,q,r,t,P,beta_air,alpha)
 
     %----------------------------------------------------------
     % lateral autopilot
     if t==0
-        % assume no rudder, therefore set delta_r=0
-        % delta_r = 0;
-        delta_r = sideslip_hold(beta_air, 1, P);
+
+        delta_r = 0; %sideslip_hold(beta_air, 1, P);
+        
         phi_c   = course_hold(chi_c, chi, r, 1, P);
         delta_a = roll_hold(phi_c, phi, p, 1, P);
 
     else
         phi_c   = course_hold(chi_c, chi, r, 0, P);
-        delta_r = sideslip_hold(beta_air, 0, P);
+        delta_a = roll_hold(phi_c, phi, p, 0, P);
+        
+        delta_r = 0; %sideslip_hold(beta_air, 0, P);
     end
-    
-    delta_a = roll_hold(phi_c, phi, p, 0, P);
   
     
     %----------------------------------------------------------
@@ -202,40 +202,43 @@ function [delta, x_command] = autopilot_uavbook(Va_c,theta_c,chi_c,Va,h,chi,phi,
     
     % define persistent variable for state of altitude state machine
     persistent altitude_state;
-    persistent initialize_integrator;
     
-%     % initialize persistent variable
-%     if t==0
-%         if h<=P.altitude_take_off_zone    
-%             altitude_state = 1;
-%         elseif h<=h_c-P.altitude_hold_zone
-%             altitude_state = 2;
-%         elseif h>=h_c+P.altitude_hold_zone
-%             altitude_state = 3;
-%         else
-%             altitude_state = 4;
-%         end
-%         initialize_integrator = 1;
-%         airspeed_hold_pitch(Va_c, Va, 1, P);
-%         airspeed_hold_throttle(Va_c, Va, 1, P);
-%         altitude_hold_pitch(h_c, h, 1, P);
-%     end
-%     
-%     % implement state machine
-%     switch altitude_state
-%         case 1  % in take-off zone
-%             delta_t = 1;
-%             theta_c = P.theta_take_off;
-%         case 2  % climb zone
-%              delta_t = 1;
-%              theta_c = airspeed_hold_pitch(Va_c, Va, 0, P);
-%         case 3 % descend zone
-%             delta_t = 0;
-%             theta_c = airspeed_hold_pitch(Va_c, Va, 0, P);
-%         case 4 % altitude hold zone
-%             delta_t = airspeed_hold_throttle(Va_c, Va, 0, P);
-%             theta_c = altitude_hold_pitch(h_c, h, q, P);
-%     end
+    % initialize persistent variable
+    if t==0
+        
+        % initialize controllers
+        airspeed_pitch_hold(Va_c, Va, 1, P);
+        airspeed_throttle_hold(Va_c, Va, 1, P);
+        altitude_hold(h_c, h, 1, P);
+        
+        % start state machine for longitudinal control
+        if h<=P.altitude_take_off_zone    
+            altitude_state = 1;
+        elseif h<=h_c-P.altitude_hold_zone
+            altitude_state = 2;
+        elseif h>=h_c+P.altitude_hold_zone
+            altitude_state = 3;
+        else
+            altitude_state = 4;
+        end
+        
+    end
+    
+    % implement state machine
+    switch altitude_state
+        case 1  % in take-off zone
+            delta_t = 1;
+            theta_c = P.theta_take_off;
+        case 2  % climb zone
+             delta_t = 1;
+             theta_c = airspeed_pitch_hold(Va_c, Va, 0, P);
+        case 3 % descend zone
+            delta_t = 0;
+            theta_c = airspeed_pitch_hold(Va_c, Va, 0, P);
+        case 4 % altitude hold zone
+            delta_t = airspeed_throttle_hold(Va_c, Va, 0, P);
+            theta_c = altitude_hold(h_c, h, q, P);
+    end
 
 delta_e = pitch_hold(theta_c, theta, q, P);
     
@@ -243,7 +246,7 @@ delta_e = pitch_hold(theta_c, theta, q, P);
     % create outputs
     
     % control outputs
-    delta = [delta_e; P.u_trim(2); P.u_trim(3); P.u_trim(4)];
+    delta = [delta_e; delta_a; delta_r; delta_t];
     % commanded (desired) states
     x_command = [...
         0;...                    % pn

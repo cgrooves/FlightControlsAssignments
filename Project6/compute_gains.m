@@ -37,8 +37,8 @@ P.ki_chi = wn_chi^2*Vg/P.g;
 delta_r_max = 45*pi/180;
 
 %%%DESIGN PARAMETERS%%%%%%
-e_beta_max = 5*pi/180;
-zeta_beta = 0.7;
+e_beta_max = 10*pi/180;
+zeta_beta = .7;
 %%%END%%%%%%%%%%%%%%%%%%%%
 
 a_beta1 = -P.rho*Va*P.S_wing/(2*P.mass)*P.C_Y_beta;
