@@ -51,8 +51,8 @@ P.ki_beta = 1/a_beta2*((a_beta1 + a_beta2*P.kp_beta)/2/zeta_beta)^2;
 delta_e_max = 30*pi/180;
 
 %%%DESIGN PARAMETERS%%%%%%
-e_theta_max = 10*pi/180;
-zeta_theta = .9;
+e_theta_max = 25*pi/180;
+zeta_theta = 1.5;
 %%%END%%%%%%%%%%%%%%%%%%%%
 
 a_theta1 = -P.rho*Va^2*P.c*P.S_wing/(2*P.Jy)*P.C_m_q*P.c/(2*Va);
@@ -71,8 +71,8 @@ P.K_theta_DC = (P.kp_theta*a_theta3)/(a_theta2 + P.kp_theta*a_theta3);
 %% Altitude Hold Gains
 
 %%%DESIGN PARAMETERS%%%%%%
-zeta_h = 0.8;
-W_h = 15;
+zeta_h = .8;
+W_h = 30;
 %%%END%%%%%%%%%%%%%%%%%%%%
 
 wn_h = 1/W_h*wn_theta;

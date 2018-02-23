@@ -64,7 +64,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [delta, x_command] = autopilot_tuning(Va_c,h_c,chi_c,Va,h,chi,phi,theta,p,q,r,t,P)
 
-    mode = 4;
+    mode = 5;
     switch mode
         case 1 % tune the roll loop
             phi_c = chi_c; % interpret chi_c to autopilot as course command
@@ -136,14 +136,16 @@ function [delta, x_command] = autopilot_tuning(Va_c,h_c,chi_c,Va,h,chi,phi,theta
             chi_c = 0;
             if t==0,
                 phi_c   = course_hold(chi_c, chi, r, 1, P);
+                delta_a = roll_hold(phi_c, phi, p, 1, P);
                 theta_c = altitude_hold(h_c, h, 1, P);
-                delta_t = airspeed_with_throttle_hold(Va_c, Va, 1, P);
+                delta_t = airspeed_throttle_hold(Va_c, Va, 1, P);
            else
                 phi_c   = course_hold(chi_c, chi, r, 0, P);
+                delta_a = roll_hold(phi_c, phi, p, 0, P);
                 theta_c = altitude_hold(h_c, h, 0, P);
-                delta_t = airspeed_with_throttle_hold(Va_c, Va, 0, P);
+                delta_t = airspeed_throttle_hold(Va_c, Va, 0, P);
             end
-            delta_a = roll_hold(phi_c, phi, p, P);
+            
             delta_e = pitch_hold(theta_c, theta, q, P);
             delta_r = 0; % no rudder
             % use trim values for elevator and throttle while tuning the lateral autopilot
@@ -414,7 +416,7 @@ function delta_e = pitch_hold(theta_c, theta, q, P)
 end
 
 % ALTITUDE HOLD USING PITCH **********************************
-function theta_c = altitude_hold_pitch(h_c, h, flag, P)
+function theta_c = altitude_hold(h_c, h, flag, P)
     persistent h_integrator;
     persistent h_error_d1;
     
