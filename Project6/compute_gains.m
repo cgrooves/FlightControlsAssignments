@@ -25,7 +25,7 @@ Vg = Va;
 
 %%%DESIGN PARAMETERS%%%
 zeta_chi = .8;
-WX = 30;
+WX = 40;
 %%%END%%%%%%%%%%%%%%%%%
 
 wn_chi = wn_phi/WX; % bandwidth separation
