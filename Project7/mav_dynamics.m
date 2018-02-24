@@ -1,4 +1,4 @@
-function [sys,x0,str,ts,simStateCompliance] = vehicleDynamics(t,x,u,flag,P)
+function [sys,x0,str,ts,simStateCompliance] = mav_dynamics(t,x,u,flag,P)
 %SFUNTMPL General MATLAB S-Function Template
 %   With MATLAB S-functions, you can define you own ordinary differential
 %   equations (ODEs), discrete system equations, and/or just about

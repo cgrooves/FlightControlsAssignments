@@ -163,3 +163,5 @@ run('compute_gains.m')
 % 
 % % linearize the equations of motion around trim conditions
 %[A_lon, B_lon, A_lat, B_lat] = compute_ss_model('mavsim_trim',x_trim,u_trim);
+
+P.Ts_gps = 1;

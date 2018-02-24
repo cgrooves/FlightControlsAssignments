@@ -1,4 +1,4 @@
-function out = forces_moments_v2(x, delta, wind, P)
+function out = forces_moments(x, delta, wind, P)
 
 % Output
 % F - forces

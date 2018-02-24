@@ -24,7 +24,7 @@
 % Function to be called from Simulink vehicle animation diagram. Sets up
 % the figure and calls appropriate functions to draw the vehicle.
 %--------------------------------------------------------------
-function drawVehicle(uu)
+function drawAircraft(uu)
     % inputs to function
     pn = uu(1);
     pe = uu(2);
