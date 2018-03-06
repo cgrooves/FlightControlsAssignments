@@ -44,7 +44,7 @@ function y = autopilot(uu,P)
         case 1,
            [delta, x_command] = autopilot_tuning(Va_c,h_c,chi_c,Va,h,chi,phi,theta,p,q,r,t,P);
         case 2,
-           [delta, x_command] = autopilot_uavbook(Va_c,h_c,chi_c,Va,h,chi,phi,theta,p,q,r,t,P);
+           [delta, x_command] = autopilot_uavbook(Va_c,h_c,chi_c,Va,h,chi,phi,theta,p,q,r,t,P,beta_air,alpha);
         case 3,
                [delta, x_command] = autopilot_TECS(Va_c,h_c,chi_c,Va,h,chi,phi,theta,p,q,r,t,P);
     end
@@ -178,7 +178,7 @@ end
 % autopilot_uavbook
 %   - autopilot defined in the uavbook
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [delta, x_command] = autopilot_uavbook(Va_c,h_c,chi_c,Va,h,chi,phi,theta,p,q,r,t,P)
+function [delta, x_command] = autopilot_uavbook(Va_c,h_c,chi_c,Va,h,chi,phi,theta,p,q,r,t,P,beta_air,alpha)
 
     %----------------------------------------------------------
     % lateral autopilot
@@ -203,25 +203,28 @@ function [delta, x_command] = autopilot_uavbook(Va_c,h_c,chi_c,Va,h,chi,phi,thet
     % define persistent variable for state of altitude state machine
     persistent altitude_state;
     
+    % start state machine for longitudinal control    
+    if h<=P.altitude_take_off_zone    
+            altitude_state = 1;
+        elseif h<=h_c-P.altitude_hold_zone
+            altitude_state = 2;
+        elseif h>=h_c+P.altitude_hold_zone
+            altitude_state = 3;
+        else
+            altitude_state = 4;
+    end
+    
     % initialize persistent variable
     if t==0
+        switch altitude_state
+            case 1 % in take-off zone
+                
                 
         % initialize controllers
         airspeed_pitch_hold(Va_c, Va, 1, P);
         airspeed_throttle_hold(Va_c, Va, 1, P);
         altitude_hold(h_c, h, 1, P);
         
-    end
-    
-    % start state machine for longitudinal control    
-    if h<=P.altitude_take_off_zone    
-            altitude_state = 1; % take-off zone
-        elseif h<=h_c-P.altitude_hold_zone
-            altitude_state = 2; % climb zone
-        elseif h>=h_c+P.altitude_hold_zone
-            altitude_state = 3; % descend zone
-        else
-            altitude_state = 4; % hold zone
     end
     
     % implement state machine
@@ -251,7 +254,7 @@ function [delta, x_command] = autopilot_uavbook(Va_c,h_c,chi_c,Va,h,chi,phi,thet
     x_command = [...
         0;...                    % pn
         0;...                    % pe
-        h_c;...                  % h
+        0;...                  % h
         Va_c;...                 % Va
         0;...                    % alpha
         0;...                    % beta
