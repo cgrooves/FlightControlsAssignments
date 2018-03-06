@@ -13,12 +13,12 @@ a_phi2 = P.rho*Va^2*P.S_wing*P.b*P.C_p_delta_a/2;
 
 wn_phi = sqrt(abs(a_phi2)*delta_a_max/e_phi_max);
 
-P.kp_phi = delta_a_max/e_phi_max*sign(a_phi2);
-P.kd_phi = (2*zeta_phi*wn_phi-a_phi1)/a_phi2;
+P.kp_phi = 2.90; %delta_a_max/e_phi_max*sign(a_phi2);
+P.kd_phi = 0.041; %(2*zeta_phi*wn_phi-a_phi1)/a_phi2;
 
 % rlocus(tf([a_phi2],[1,(a_phi1+a_phi2*P.kd_phi),a_phi2*P.kp_phi,0]))
 
-P.ki_phi = .03;
+P.ki_phi = 2.69; %.03;
 
 %% Course Hold Gains
 Vg = Va;
@@ -30,8 +30,15 @@ WX = 37;
 
 wn_chi = wn_phi/WX; % bandwidth separation
 
-P.kp_chi = 2*zeta_chi*wn_chi*Vg/P.g;
-P.ki_chi = wn_chi^2*Vg/P.g;
+P.kp_chi = 1.53; %2*zeta_chi*wn_chi*Vg/P.g;
+P.ki_chi = 0.6885; %wn_chi^2*Vg/P.g;
+
+P.kp_chi = 1.52;
+P.ki_chi = 0.041;
+
+P.kp_phi = 0.88;
+P.kd_phi = 0.16;
+P.ki_phi = 0.804;
 
 %% Sideslip Hold Gains
 delta_r_max = 45*pi/180;
@@ -51,8 +58,8 @@ P.ki_beta = 1/a_beta2*((a_beta1 + a_beta2*P.kp_beta)/2/zeta_beta)^2;
 delta_e_max = 30*pi/180;
 
 %%%DESIGN PARAMETERS%%%%%%
-e_theta_max = 32*pi/180;
-zeta_theta = 0.7;
+e_theta_max = 20*pi/180;
+zeta_theta = 0.9;
 %%%END%%%%%%%%%%%%%%%%%%%%
 
 a_theta1 = -P.rho*Va^2*P.c*P.S_wing/(2*P.Jy)*P.C_m_q*P.c/(2*Va);
@@ -71,7 +78,7 @@ P.K_theta_DC = (P.kp_theta*a_theta3)/(a_theta2 + P.kp_theta*a_theta3);
 %% Altitude Hold Gains
 
 %%%DESIGN PARAMETERS%%%%%%
-zeta_h = .8;
+zeta_h = 0.7;
 W_h = 30;
 %%%END%%%%%%%%%%%%%%%%%%%%
 

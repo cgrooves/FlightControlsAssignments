@@ -44,7 +44,7 @@ function y = autopilot(uu,P)
         case 1,
            [delta, x_command] = autopilot_tuning(Va_c,h_c,chi_c,Va,h,chi,phi,theta,p,q,r,t,P);
         case 2,
-           [delta, x_command] = autopilot_uavbook(Va_c,h_c,chi_c,Va,h,chi,phi,theta,p,q,r,t,P,beta_air,alpha);
+           [delta, x_command] = autopilot_uavbook(Va_c,h_c,chi_c,Va,h,chi,phi,theta,p,q,r,t,P);
         case 3,
                [delta, x_command] = autopilot_TECS(Va_c,h_c,chi_c,Va,h,chi,phi,theta,p,q,r,t,P);
     end
@@ -178,7 +178,7 @@ end
 % autopilot_uavbook
 %   - autopilot defined in the uavbook
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [delta, x_command] = autopilot_uavbook(Va_c,h_c,chi_c,Va,h,chi,phi,theta,p,q,r,t,P,beta_air,alpha)
+function [delta, x_command] = autopilot_uavbook(Va_c,h_c,chi_c,Va,h,chi,phi,theta,p,q,r,t,P)
 
     %----------------------------------------------------------
     % lateral autopilot
@@ -205,23 +205,23 @@ function [delta, x_command] = autopilot_uavbook(Va_c,h_c,chi_c,Va,h,chi,phi,thet
     
     % initialize persistent variable
     if t==0
-        
+                
         % initialize controllers
         airspeed_pitch_hold(Va_c, Va, 1, P);
         airspeed_throttle_hold(Va_c, Va, 1, P);
         altitude_hold(h_c, h, 1, P);
         
-        % start state machine for longitudinal control
-        if h<=P.altitude_take_off_zone    
-            altitude_state = 1;
+    end
+    
+    % start state machine for longitudinal control    
+    if h<=P.altitude_take_off_zone    
+            altitude_state = 1; % take-off zone
         elseif h<=h_c-P.altitude_hold_zone
-            altitude_state = 2;
+            altitude_state = 2; % climb zone
         elseif h>=h_c+P.altitude_hold_zone
-            altitude_state = 3;
+            altitude_state = 3; % descend zone
         else
-            altitude_state = 4;
-        end
-        
+            altitude_state = 4; % hold zone
     end
     
     % implement state machine
@@ -240,7 +240,7 @@ function [delta, x_command] = autopilot_uavbook(Va_c,h_c,chi_c,Va,h,chi,phi,thet
             theta_c = altitude_hold(h_c, h, q, P);
     end
 
-delta_e = pitch_hold(theta_c, theta, q, P);
+    delta_e = pitch_hold(theta_c, theta, q, P);
     
     %----------------------------------------------------------
     % create outputs
@@ -251,7 +251,7 @@ delta_e = pitch_hold(theta_c, theta, q, P);
     x_command = [...
         0;...                    % pn
         0;...                    % pe
-        0;...                  % h
+        h_c;...                  % h
         Va_c;...                 % Va
         0;...                    % alpha
         0;...                    % beta
