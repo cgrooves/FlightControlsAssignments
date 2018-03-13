@@ -64,12 +64,9 @@ function xhat = estimate_states(uu, P)
    
    hhat = lpf_static_pres/(P.rho*P.g);
    Vahat = sqrt(2*lpf_diff_pres/P.rho);
-%    phat = LPF(y_gyro_x_d1,y_gyro_x,P.alpha_gyro_x);
-%    qhat = LPF(y_gyro_y_d1,y_gyro_y,P.alpha_gyro_y);
-%    rhat = LPF(y_gyro_z_d1,y_gyro_z,P.alpha_gyro_z);
-    phat = y_gyro_x;
-    qhat = y_gyro_y;
-    rhat = y_gyro_z;
+   phat = LPF(y_gyro_x_d1,y_gyro_x,P.alpha_gyro_x);
+   qhat = LPF(y_gyro_y_d1,y_gyro_y,P.alpha_gyro_y);
+   rhat = LPF(y_gyro_z_d1,y_gyro_z,P.alpha_gyro_z);
    
    % update old values
    y_static_pres_d1 = lpf_static_pres;
@@ -87,33 +84,32 @@ function xhat = estimate_states(uu, P)
    
    if t == 0
        xhat_a = [0 0]';
-       Pa = diag([0.5 0.5]);
-       Qa = diag([(10*pi/180)^2, (10*pi/180)^2]);
-       Ra = diag([.0025, .0025, .0025]);
+       Pa = diag([1 1]);
+       Qa = diag([0.1 0.1]);
+       Ra = diag([.0025, .0025]);
    end
+   
+   phihat = xhat_a(1);
+   thetahat = xhat_a(2);
    
    % Prediction Steps
    N = 10;
    
    for i = 1:N
-       phihat = xhat_a(1);
-       thetahat = xhat_a(2);
-       
        f = [...
            phat + qhat*sin(phihat)*tan(thetahat) + rhat*cos(phihat)*...
            tan(thetahat);...
            qhat*cos(phihat) - rhat*sin(phihat);...
            ];
-       xhat_a = xhat_a + P.Ts/N*f;
+       xhat_a = xhat_a + P.Tout/N*f;
        Aa = [qhat*cos(phihat)*tan(thetahat) - rhat*sin(phihat)*tan(thetahat),...
            (qhat*sin(phihat) - rhat*cos(phihat))/cos(thetahat)^2;...
            -qhat*sin(phihat) - rhat*cos(phihat),    0];
-       Pa = Pa + (P.Ts/N)*(Aa*Pa + Pa*Aa' + Qa);
+       Pa = Pa + (P.Tout/N)*(Aa*Pa + Pa*Aa' + Q);
    end
 
    % If measurement is received from sensor (every P.Ts or 100 Hz)
-%    if ~mod(t*100,1)
-    if 0
+   if ~mod(t*100,1)
        % Jacobian of h from x
        C = [...
            0, qhat*Vahat*cos(thetahat) + P.g*cos(thetahat);
@@ -155,14 +151,6 @@ function xhat = estimate_states(uu, P)
     bxhat    = 0;
     byhat    = 0;
     bzhat    = 0;
-    
-    pnhat = 0;
-    pehat = 0;
-    chihat = 0;
-    Vghat = Vahat;
-    wnhat = 0;
-    wehat = 0;
-    psihat = 0;
     
       xhat = [...
         pnhat;...
