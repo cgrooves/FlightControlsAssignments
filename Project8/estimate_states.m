@@ -88,8 +88,8 @@ function xhat = estimate_states(uu, P)
    if t == 0
        xhat_a = [0 0]';
        Pa = diag([0.5 0.5]);
-       Qa = diag([(10*pi/180)^2, (10*pi/180)^2]);
-       Ra = diag([.0025, .0025, .0025]);
+       Qa = diag([(1*pi/180)^2, (1*pi/180)^2]);
+       Ra = diag([.0025^2, .0025^2, .0025^2]);
    end
    
    % Prediction Steps
@@ -112,8 +112,8 @@ function xhat = estimate_states(uu, P)
    end
 
    % If measurement is received from sensor (every P.Ts or 100 Hz)
-%    if ~mod(t*100,1)
-    if 0
+   if ~mod(t*100,1)
+%     if 0
        % Jacobian of h from x
        C = [...
            0, qhat*Vahat*cos(thetahat) + P.g*cos(thetahat);
