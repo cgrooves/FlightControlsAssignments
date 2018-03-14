@@ -87,8 +87,8 @@ function xhat = estimate_states(uu, P)
    
    if t == 0
        xhat_a = [0 0]';
-       Pa = diag([0.5 0.5]);
-       Qa = diag([(1*pi/180)^2, (1*pi/180)^2]);
+       Pa = diag([0.1 0.1]);
+       Qa = diag([(.5*pi/180)^2, (.5*pi/180)^2]);
        Ra = diag([.0025^2, .0025^2, .0025^2]);
    end
    
