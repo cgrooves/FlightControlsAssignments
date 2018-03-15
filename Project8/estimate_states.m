@@ -163,7 +163,7 @@ function xhat = estimate_states(uu, P)
    if t == 0
        xhat_p = [P.pn0; P.pe0; P.Va0; P.psi0; 0; 0; P.psi0]';
        Pp = diag([0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01]);
-       Rp = diag([.21^2, .21^2, 2.1^2, (2.1/xhat_p(4))^2, 0.4, 0.4, (2.1/xhat_p(4))^2]);
+       Rp = diag([.21^2, .21^2, 2.1^2, (2.1/xhat_p(4))^2, 0.4, 0.4]);
        Qp = diag([.1e-5, .1e-5, .001e-5, .002e-5, .001e-5, .001e-5, .01e-6]);
    end
    
@@ -229,7 +229,7 @@ function xhat = estimate_states(uu, P)
    end
    
    % Sensor measurement update
-   if 0 %~mod(t,.05)
+   if ~mod(t,.05)
        
        C = [...
            1, 0, 0, 0, 0, 0, 0;...
