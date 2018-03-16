@@ -1,27 +1,29 @@
 clc
-    clf
+    close all
     
     %Plotting script to see the results from the simulation
     %Each plot has true state, commanded state, and estimated state
     fig_num = 1;
     
-    plot_pn = 0;
-    plot_pe = 0;
-    plot_h = 1;
+    plot_pn = 1;
+    plot_pe = 1;
+    plot_h = 0;
     
-    plot_Va = 1;
+    plot_Va = 0;
     plot_alpha = 0;
     plot_beta = 0;
     
-    plot_phi = 1;
-    plot_theta = 1;
+    plot_phi = 0;
+    plot_theta = 0;
     plot_chi = 1;
     
     plot_p = 0;
     plot_q = 0;
     plot_r = 0;
     
-    plot_inputs = 1; %de,dt,da,dr
+    plot_Vg = 0;
+    
+    plot_inputs = 0; %de,dt,da,dr
 
     %Format our data file
     data = load('state_data.mat');
@@ -31,7 +33,7 @@ clc
     
     pn          = data(1,:);             % North position (meters)
     pe          = data(2,:);             % East position (meters)
-    h           = -data(3,:);             % altitude (meters)
+    h           = data(3,:);             % altitude (meters)
     u           = data(4,:);             % body velocity along x-axis (meters/s)
     v           = data(5,:);             % body velocity along y-axis (meters/s)
     w           = data(6,:);             % body velocity along z-axis (meters/s)
@@ -71,7 +73,7 @@ clc
     p_hat       = 180/pi*data(40,:);     % estimated body angular rate along x-axis (degrees/s)
     q_hat       = 180/pi*data(41,:);     % estimated body angular rate along y-axis (degrees/s)
     r_hat       = 180/pi*data(42,:);     % estimated body angular rate along z-axis (degrees/s)
-%    Vg_hat      = data(43,:);            % estimated groundspeed
+    Vg_hat      = data(43,:);            % estimated groundspeed
 %    wn_hat      = data(44,:);            % estimated North wind
 %    we_hat      = data(45,:);            % estimated East wind
 %    psi_hat     = 180/pi*data(46,:);     % estimated heading
@@ -179,4 +181,11 @@ clc
          figure(fig_num);
          plot(t,delta_t,'r');
          title('Throttle');
+      end
+      
+      if plot_Vg == 1
+         figure(fig_num);
+         plot(t,Vg,'b',t,Vg_hat,'g'); 
+         title('Vg');
+         fig_num = fig_num+1;
       end
