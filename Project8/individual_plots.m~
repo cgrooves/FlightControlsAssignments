@@ -6,10 +6,10 @@ clc
     fig_num = 1;
     
     plot_pn = 1;
-    plot_pe = 1;
+    plot_pe = 0;
     plot_h = 0;
     
-    plot_Va = 0;
+    plot_Va = 1;
     plot_alpha = 0;
     plot_beta = 0;
     

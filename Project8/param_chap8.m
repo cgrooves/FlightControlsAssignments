@@ -162,7 +162,7 @@ P.bias_gyro_z = 0;
 
 % LPF Gain Values
 P.alpha_static_pres = .50;
-P.alpha_diff_pres = .50;
+P.alpha_diff_pres = .20;
 P.alpha_gyro_x = .25;
 P.alpha_gyro_y = .25;
 P.alpha_gyro_z = .25;
@@ -177,4 +177,4 @@ run('compute_gains.m')
 % % linearize the equations of motion around trim conditions
 %[A_lon, B_lon, A_lat, B_lat] = compute_ss_model('mavsim_trim',x_trim,u_trim);
 
-P.Ts_gps = 1;
+P.Ts_gps = .1;
