@@ -14,8 +14,8 @@ clc
     plot_beta = 0;
     
     plot_phi = 0;
-    plot_theta = 1;
-    plot_chi = 0;
+    plot_theta = 0;
+    plot_chi = 1;
     
     plot_p = 0;
     plot_q = 0;

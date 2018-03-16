@@ -162,9 +162,9 @@ function xhat = estimate_states(uu, P)
    % Initalize
    if t == 0
        xhat_p = [-1000; 0; P.Va0; P.psi0; 0; 0; P.psi0]';
-       Pp = diag([10, 10, .025, (8*pi/180)^2, .01, .01, (8*pi/180)^2]);
+       Pp = diag([10, 10, .025, (20*pi/180)^2, 5, 1, (8*pi/180)^2]);
        Rp = diag([10^2, 10^2, .05^2, (.45)^2, 25, 25]); % check stuff
-       Qp = diag([100, 100, 10, 100, .1, .1, .1]);
+       Qp = diag([100, 100, 10, 100, 9, 8, 8]);
    end
    
    % Prediction Steps
@@ -271,8 +271,8 @@ function xhat = estimate_states(uu, P)
    
     pnhat = xhat_p(1);
     pehat = xhat_p(2);
-    chihat = xhat_p(3);
-    Vghat = xhat_p(4);
+    Vghat = xhat_p(3);
+    chihat = xhat_p(4);
     wnhat = xhat_p(5);
     wehat = xhat_p(6);
     psihat = xhat_p(7);
