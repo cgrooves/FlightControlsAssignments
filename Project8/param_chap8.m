@@ -134,7 +134,8 @@ P.sigma_v = 1.06;
 P.sigma_w = .7;
 
 P.Ts = 0.01;
-P.Tout = 0.001;
+P.Ts_gps = .1;
+P.Ts_gyros = .01;
 
 % compute trim
 [x_trim, u_trim] = compute_trim('mavsim_trim',P.Va0,gamma,R);
@@ -177,4 +178,3 @@ run('compute_gains.m')
 % % linearize the equations of motion around trim conditions
 %[A_lon, B_lon, A_lat, B_lat] = compute_ss_model('mavsim_trim',x_trim,u_trim);
 
-P.Ts_gps = .1;
