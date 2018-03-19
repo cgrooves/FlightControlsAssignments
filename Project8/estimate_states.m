@@ -87,7 +87,7 @@ function xhat = estimate_states(uu, P)
    
    if t == 0
        xhat_a = [0, 0]';
-       Pa = diag([0.01 0]);
+       Pa = diag([0.01; 0]);
        Qa = diag([1e-11, 1e-20]); %diag([(.005*pi/180)^2, (.005*pi/180)^2]);
        Ra = diag([.0025^2, .0025^2, .0025^2]);
    end
@@ -116,7 +116,7 @@ function xhat = estimate_states(uu, P)
    end
 
    % If measurement is received from sensor (every P.Ts or 100 Hz)
-   if ~mod(t,.01)
+   if 0%~mod(t,.01)
 %     if 0
        % Jacobian of h from x
        C = [...
@@ -161,10 +161,10 @@ function xhat = estimate_states(uu, P)
    
    % Initalize
    if t == 0
-       xhat_p = [-1000; 0; P.Va0; P.psi0; 0; 0; P.psi0]';
-       Pp = diag([10, 10, .025, (20*pi/180)^2, 5, 1, (8*pi/180)^2]);
-       Rp = diag([10^2, 10^2, .05^2, (.45)^2, 25, 25]); % check stuff
-       Qp = diag([100, 100, 10, 100, 9, 8, 8]);
+       xhat_p = [P.pn0; 0; P.Va0; P.psi0; 0; 0; P.psi0]';
+       Pp = diag([.0001, .0001, .0025, (.0001*pi/180)^2, 5, 5, (.0001*pi/180)^2]);
+       Rp = diag([5^2, 5^2, 2^2, (.45)^2, 20^2, 20^2]); % check stuff
+       Qp = .001*diag([.001, .001, 10, .4, 9, 8, 8]);
    end
    
    % Prediction Steps
@@ -212,7 +212,7 @@ function xhat = estimate_states(uu, P)
            
            0, 0, sin(chi), Vg*cos(chi), 0, 0, 0;...
            
-           0, 0, -f(3)/Vg, 0, -psidot*Vahat*sin(psi), psidot*Vahat*cos(psi), ...
+           0, 0, -f(3)/Vg, 0, -psidot*Vahat*sin(psi)/Vg, psidot*Vahat*cos(psi)/Vg, ...
            -psidot*Vahat*(wn*cos(psi) + we*sin(psi))/Vg;...
            
            0, 0, -P.g/Vg^2*tan(phihat)*cos(chi-psi), -P.g/Vg*tan(phihat)*...
@@ -229,7 +229,7 @@ function xhat = estimate_states(uu, P)
    end
    
    % Sensor measurement update
-   if ~mod(t,.1)
+   if 0 %~mod(t,.1)
        
        C = [...
            1, 0, 0, 0, 0, 0, 0;...
