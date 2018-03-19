@@ -1,290 +1,124 @@
-    % estimate_states
-%   - estimate the MAV states using gyros, accels, pressure sensors, and
-%   GPS.
-%
-% Outputs are:
-%   pnhat    - estimated North position, 
-%   pehat    - estimated East position, 
-%   hhat     - estimated altitude, 
-%   Vahat    - estimated airspeed, 
-%   alphahat - estimated angle of attack
-%   betahat  - estimated sideslip angle
-%   phihat   - estimated roll angle, 
-%   thetahat - estimated pitch angel, 
-%   chihat   - estimated course, 
-%   phat     - estimated roll rate, 
-%   qhat     - estimated pitch rate, 
-%   rhat     - estimated yaw rate,
-%   Vghat    - estimated ground speed, 
-%   wnhat    - estimate of North wind, 
-%   wehat    - estimate of East wind
-%   psihat   - estimate of heading angle
-% 
-% 
-% Modified:  3/15/2010 - RB
-%            5/18/2010 - RB
-%
+function xhat = estimate_states(uu,P)
 
-function xhat = estimate_states(uu, P)
+    % rename inputs
+    y_gyro_x      = uu(1);
+    y_gyro_y      = uu(2);
+    y_gyro_z      = uu(3);
+    y_accel_x     = uu(4);
+    y_accel_y     = uu(5);
+    y_accel_z     = uu(6);
+    y_static_pres = uu(7);
+    y_diff_pres   = uu(8);
+    y_gps_n       = uu(9);
+    y_gps_e       = uu(10);
+    y_gps_h       = uu(11);
+    y_gps_Vg      = uu(12);
+    y_gps_course  = uu(13);
+    t             = uu(14);
+    
+    % Altitude and Airspeed estimation ------------------------------------
+    % LPF inverted sensor models
+    
+    % Initialize values
+    persistent y_static_pres_d1;
+    persistent y_diff_pres_d1;
 
-   % rename inputs
-   y_gyro_x      = uu(1);
-   y_gyro_y      = uu(2);
-   y_gyro_z      = uu(3);
-   y_accel_x     = uu(4);
-   y_accel_y     = uu(5);
-   y_accel_z     = uu(6);
-   y_static_pres = uu(7);
-   y_diff_pres   = uu(8);
-   y_gps_n       = uu(9);
-   y_gps_e       = uu(10);
-   y_gps_h       = uu(11);
-   y_gps_Vg      = uu(12);
-   y_gps_course  = uu(13);
-   t             = uu(14);
-   
-   % Initialize values
-  persistent y_static_pres_d1;
-  persistent y_diff_pres_d1;
-  persistent y_gyro_x_d1;
-  persistent y_gyro_y_d1;
-  persistent y_gyro_z_d1;
-   
-   if t == 0
+    if t == 0
        y_static_pres_d1 = 0;
        y_diff_pres_d1 = 0;
-       y_gyro_x_d1 = 0;
-       y_gyro_y_d1 = 0;
-       y_gyro_z_d1 = 0;
-   end
+    end
    
-   % Estimate angular rates   
-   lpf_static_pres = LPF(y_static_pres_d1,y_static_pres,P.alpha_static_pres);
-   lpf_diff_pres = LPF(y_diff_pres_d1,y_diff_pres,P.alpha_diff_pres);
-   
-   hhat = lpf_static_pres/(P.rho*P.g);
-   Vahat = sqrt(2*lpf_diff_pres/P.rho);
-%    phat = LPF(y_gyro_x_d1,y_gyro_x,P.alpha_gyro_x);
-%    qhat = LPF(y_gyro_y_d1,y_gyro_y,P.alpha_gyro_y);
-%    rhat = LPF(y_gyro_z_d1,y_gyro_z,P.alpha_gyro_z);
+    % Estimate angular rates   
+    lpf_static_pres = LPF(y_static_pres_d1,y_static_pres,P.alpha_static_pres);
+    lpf_diff_pres = LPF(y_diff_pres_d1,y_diff_pres,P.alpha_diff_pres);
+
+    hhat = lpf_static_pres/(P.rho*P.g);
+    Vahat = sqrt(2*lpf_diff_pres/P.rho);
     phat = y_gyro_x;
     qhat = y_gyro_y;
     rhat = y_gyro_z;
-   
-   % update old values
-   y_static_pres_d1 = lpf_static_pres;
-   y_diff_pres_d1 = lpf_diff_pres;
-   y_gyro_x_d1 = phat;
-   y_gyro_y_d1 = qhat;
-   y_gyro_z_d1 = rhat;
-   
-   % Implement Continuous Discrete Extended Kalman Filter for pitch and
-   % roll angles
-   persistent xhat_a;
-   persistent Pa;
-   persistent Qa;
-   persistent Ra;
-   
-   if t == 0
-       xhat_a = [0, 0]';
-       Pa = diag([0.01; 0]);
-       Qa = diag([1e-11, 1e-20]); %diag([(.005*pi/180)^2, (.005*pi/180)^2]);
-       Ra = diag([.0025^2, .0025^2, .0025^2]);
-   end
-   
-   % Prediction Steps
-   N = 10;
-   
-   for i = 1:N
-       phihat = xhat_a(1);
-       thetahat = xhat_a(2);
-       
-       f = [...
-           phat + qhat*sin(phihat)*tan(thetahat) + rhat*cos(phihat)*...
-           tan(thetahat);...
-           qhat*cos(phihat) - rhat*sin(phihat);...
-           ];
-       xhat_a = xhat_a + P.Ts/N*f;
-       
-       phihat = xhat_a(1);
-       thetahat = xhat_a(2);
-       
-       Aa = [qhat*cos(phihat)*tan(thetahat) - rhat*sin(phihat)*tan(thetahat),...
-           (qhat*sin(phihat) + rhat*cos(phihat))/cos(thetahat)^2;...
-           -qhat*sin(phihat) - rhat*cos(phihat),    0];
-       Pa = Pa + (P.Ts/N)*(Aa*Pa + Pa*Aa' + Qa);
-   end
 
-   % If measurement is received from sensor (every P.Ts or 100 Hz)
-   if 0%~mod(t,.01)
-%     if 0
-       % Jacobian of h from x
-       C = [...
-           0, qhat*Vahat*cos(thetahat) + P.g*cos(thetahat);
-           
-           -P.g*cos(thetahat)*cos(phihat), ...
-           -rhat*Vahat*sin(thetahat) - phat*Vahat*cos(thetahat) + ...
-           P.g*sin(thetahat)*sin(phihat);
-           
-           P.g*cos(thetahat)*sin(phihat), ...
-           qhat*Vahat*sin(thetahat) + P.g*sin(thetahat)*cos(phihat);...
-           ];
-       % update L gains
-       L = Pa*C'*inv(Ra + C*Pa*C');
-       
-       % update P matrix - estimation error covariance matrix
-       Pa = (eye(2) - L*C)*Pa;
-       
-       % use dynamic observer model for state estimation
-       y = [y_accel_x, y_accel_y, y_accel_z]';
-       h = [...
-           qhat*Vahat*sin(thetahat) + P.g*sin(thetahat);
-           
-           rhat*Vahat*cos(thetahat) - phat*Vahat*sin(thetahat) - ...
-           P.g*cos(thetahat)*sin(phihat);
-           
-           -qhat*Vahat*cos(thetahat) - P.g*cos(thetahat)*cos(phihat);...
-           ];
-       
-       xhat_a = xhat_a + L*(y - h);
-   end
-   
-   % extract out states
-   phihat = xhat_a(1);
-   thetahat = xhat_a(2);
-   
-   % Implement Cont.-Discrete EKF for pn, pe, Vg, Chi, wn, we, and psi
-   persistent xhat_p;
-   persistent Pp;
-   persistent Qp;
-   persistent Rp;
-   
-   % Initalize
-   if t == 0
-       xhat_p = [P.pn0; 0; P.Va0; P.psi0; 0; 0; P.psi0]';
-       Pp = diag([.0001, .0001, .0025, (.0001*pi/180)^2, 5, 5, (.0001*pi/180)^2]);
-       Rp = diag([5^2, 5^2, 2^2, (.45)^2, 20^2, 20^2]); % check stuff
-       Qp = .001*diag([.001, .001, 10, .4, 9, 8, 8]);
-   end
-   
-   % Prediction Steps
-   for i = 1:N
-       pn = xhat_p(1);
-       pe = xhat_p(2);
-       Vg = xhat_p(3);
-       chi = xhat_p(4);
-       wn = xhat_p(5);
-       we = xhat_p(6);
-       psi = xhat_p(7);
-       
-       psidot = qhat*sin(phihat)/cos(thetahat) + rhat*cos(phihat)/cos(thetahat);
-       
-       f = [...
-           Vg*cos(chi);...
-           
-           Vg*sin(chi);...
-           
-           1/Vg*((Vahat*cos(psi) + wn)*(-Vahat*psidot*sin(psi)) + ...
-           (Vahat*sin(psi) + we)*(Vahat*psidot*cos(psi)));...
-           
-           P.g/Vg*tan(phihat)*cos(chi-psi);...
-           
-           0;...
-           0;...
-           
-           psidot;...
-           ];
-       
-       xhat_p = xhat_p + (P.Ts/N)*f;
-       
-       pn = xhat_p(1);
-       pe = xhat_p(2);
-       Vg = xhat_p(3);
-       chi = xhat_p(4);
-       wn = xhat_p(5);
-       we = xhat_p(6);
-       psi = xhat_p(7);
-       
-       psidot = qhat*sin(phihat)/cos(thetahat) + rhat*cos(phihat)/cos(thetahat);
-       
-       A = [...
-           0, 0, cos(chi), -Vg*sin(chi), 0, 0, 0;...
-           
-           0, 0, sin(chi), Vg*cos(chi), 0, 0, 0;...
-           
-           0, 0, -f(3)/Vg, 0, -psidot*Vahat*sin(psi)/Vg, psidot*Vahat*cos(psi)/Vg, ...
-           -psidot*Vahat*(wn*cos(psi) + we*sin(psi))/Vg;...
-           
-           0, 0, -P.g/Vg^2*tan(phihat)*cos(chi-psi), -P.g/Vg*tan(phihat)*...
-           sin(chi-psi), 0, 0, P.g/Vg*tan(phihat)*sin(chi-psi);...
-           
-           0, 0, 0, 0, 0, 0, 0;...
-           
-           0, 0, 0, 0, 0, 0, 0;...
-           
-           0, 0, 0, 0, 0, 0, 0;...
-           ];
-       
-       Pp = Pp + (P.Ts/N)*(A*Pp + Pp*A' + Qp);
-   end
-   
-   % Sensor measurement update
-   if 0 %~mod(t,.1)
-       
-       C = [...
-           1, 0, 0, 0, 0, 0, 0;...
-           
-           0, 1, 0, 0, 0, 0, 0;...
-           
-           0, 0, 1, 0, 0, 0, 0;...
-           
-           0, 0, 0, 1, 0, 0, 0;...
-           
-           0, 0, -cos(chi), Vg*sin(chi), 1, 0, -Vahat*sin(psi);...
-           
-           0, 0, -sin(chi), -Vg*cos(chi), 0, 1, Vahat*cos(psi);...
-           ];
-       
-       y = [y_gps_n;...
-           y_gps_e;...
-           y_gps_Vg;...
-           y_gps_course;...
-           Vahat*cos(psi) + wn - Vg*cos(chi);...
-           Vahat*sin(psi) + we - Vg*sin(chi);...
-           ];
-       
-       h = [...
-           pn;
-           pe;
-           Vg;
-           chi;
-           Vahat*cos(psi) + wn - Vg*cos(chi);...
-           Vahat*sin(psi) + we - Vg*sin(chi);...
-           ];
-       
-       L = Pp*C'*inv(Rp + C*Pp*C');
-       
-       Pp = (eye(7) - L*C)*Pp;
-       
-       xhat_p = xhat_p + L*(y - h);
-   end
-   
-    pnhat = xhat_p(1);
-    pehat = xhat_p(2);
-    Vghat = xhat_p(3);
-    chihat = xhat_p(4);
-    wnhat = xhat_p(5);
-    wehat = xhat_p(6);
-    psihat = xhat_p(7);
-  
-    % not estimating these states 
+    % update old values
+    y_static_pres_d1 = lpf_static_pres;
+    y_diff_pres_d1 = lpf_diff_pres;
+    %----------------------------------------------------------------------
+    % EKF Attitude Estimation
+    %----------------------------------------------------------------------
+    % Initialize states and covariance matrices
+    persistent xhat_att;
+    persistent Q_att;
+    persistent P_att;
+    persistent R_att;
+    
+    if t == 0
+        xhat_att = [0, 0]';
+        P_att = diag([0.01; 0]);
+        Q_att = diag([1e-11, 1e-20]);
+        R_att = 0.0025^2*eye(3);
+    end
+    
+    u_att = [phat, qhat, rhat, Vahat];
+    
+    % Prediction Steps
+    N = 10;
+    for i = 1:N
+        xhat_att = xhat_att + P.Ts/N*f_att(xhat_att,u_att);
+        A_att = df_dx_att(xhat_att,u_att);
+        P_att = P_att + P.Ts/N*(A_att*P_att + P_att*A_att' + Q_att);
+    end
+        
+    % Measurement Correction
+    
+    %----------------------------------------------------------------------
+    % EKF GPS Estimation
+    %----------------------------------------------------------------------
+    % Initialize states and covariance matrices
+    persistent xhat_gps;
+    persistent P_gps;
+    persistent R_gps;
+    persistent Q_gps;
+    
+    if t == 0
+        xhat_gps = [P.pn0; P.pe0; P.Va0; P.psi0; 0; 0; P.psi0];
+        P_gps = diag([.01, .01, .01, .01, .01, .01, .01]);
+        Q_gps = diag([.001, .001, .1, .1, 1, 1, .1]);
+    end
+    
+    u_gps = [Vahat; qhat; rhat; xhat_att(1); xhat_att(2)];
+    
+    % Prediction Steps
+    N = 10;
+    for i = 1:N
+        xhat_gps = xhat_gps + P.Ts/N*f_gps(xhat_gps,u_gps,P.g);
+        A_gps = df_dx_gps(xhat_gps,u_gps,P.g);
+        P_gps = P_gps + P.Ts/N*(A_gps*P_gps + P_gps*A_gps' + Q_gps);
+    end
+        
+    % Measurement Correction
+    %----------------------------------------------------------------------
+    %----------------------------------------------------------------------
+    % States out
+    %----------------------------------------------------------------------
+    % extract from attitude and gps estimations
+    % assign into xhat
+    phihat = xhat_att(1);
+    thetahat = xhat_att(2);
+    
+    pnhat = xhat_gps(1);
+    pehat = xhat_gps(2);
+    Vghat = xhat_gps(3);
+    chihat = xhat_gps(4);
+    wnhat = xhat_gps(5);
+    wehat = xhat_gps(6);
+    psihat = xhat_gps(7);
+    
     alphahat = 0;
     betahat  = 0;
     bxhat    = 0;
     byhat    = 0;
     bzhat    = 0;
     
-      xhat = [...
+    xhat = [...
         pnhat;...
         pehat;...
         hhat;...
@@ -307,11 +141,132 @@ function xhat = estimate_states(uu, P)
         ];
 end
 
+%----------------------------------------------------------------------
+% Supporting Functions ************************************************
+%----------------------------------------------------------------------
 % Low-pass filter function: pass in previous filtered value, new 
 % measurement, and filter gain value, get out new filtered value; old value
 % is updated to new one.
 function y = LPF(y_d1, u, alpha)
 
-y = alpha*y_d1 + (1-alpha)*u;
+    y = alpha*y_d1 + (1-alpha)*u;
+
+end
+
+% Attitude dynamics
+function xhat_dot = f_att(xhat,u)
+    p = u(1);
+    q = u(2);
+    r = u(3);
+%     Va = u(4);
+    phi = xhat(1);
+    theta = xhat(2);
+    
+    xhat_dot = [...
+        p + q*sin(phi)*tan(theta) + r*cos(phi)*tan(theta);...
+        q*cos(phi) - r*sin(phi);...
+        ];
+end
+
+% Jacobian of attitude dynamics
+function A = df_dx_att(xhat,u)
+%     p = u(1);
+    q = u(2);
+    r = u(3);
+%     Va = u(4);
+    phi = xhat(1);
+    theta = xhat(2);
+    
+    A = [...
+        q*cos(phi)*tan(theta)-r*sin(phi)*tan(theta), (q*sin(phi) + ...
+        r*cos(phi))/cos(theta)^2;...
+        
+        -q*sin(phi) - r*cos(phi), 0;...
+        ];
+end
+
+% Nonlinear function for gps states
+function xhat_dot = f_gps(xhat,u,g)
+
+    % Enumerate states and inputs
+%     pn = xhat(1);
+%     pe = xhat(2);
+    Vg = xhat(3);
+    chi = xhat(4);
+    wn = xhat(5);
+    we = xhat(6);
+    psi = xhat(7);
+    
+    Va = u(1);
+    q = u(2);
+    r = u(3);
+    phi = u(4);
+    theta = u(5);
+    
+    % nonlinear dynamics
+    psidot = q*sin(phi)/cos(theta) + r*cos(phi)/cos(theta);
+    
+    xhat_dot = [...
+        Vg*cos(chi);...
+        
+        Vg*sin(chi);...
+        
+        ((Va*cos(psi) + wn)*(-Va*psidot*sin(psi)) + (Va*sin(psi) + we)...
+        *(Va*psidot*cos(psi)))/Vg;...
+        
+        g/Vg*tan(phi)*cos(chi-psi);...
+        
+        0;...
+        
+        0;...
+        
+        psidot;...
+        ];
+
+end
+
+% Jacobian of gps dynamics
+function A = df_dx_gps(xhat,u,g)
+
+    % Enumerate states and inputs
+%     pn = xhat(1);
+%     pe = xhat(2);
+    Vg = xhat(3);
+    chi = xhat(4);
+    wn = xhat(5);
+    we = xhat(6);
+    psi = xhat(7);
+    
+    Va = u(1);
+    q = u(2);
+    r = u(3);
+    phi = u(4);
+    theta = u(5);
+    
+    psidot = q*sin(phi)/cos(theta) + r*cos(phi)/cos(theta);
+    Vgdot = ((Va*cos(psi) + wn)*(-Va*psidot*sin(psi)) + (Va*sin(psi) + we)...
+        *(Va*psidot*cos(psi)))/Vg;
+    dVgdot_dpsi = -psidot*Va*(wn*cos(psi) + we*sin(psi))/Vg;
+    dchidot_dVg = -g/Vg^2*tan(phi)*cos(chi-psi);
+    dchidot_dchi = -g/Vg*tan(phi)*sin(chi-psi);
+    dchidot_dpsi = g/Vg*tan(phi)*sin(chi-psi);
+    
+    % jacobian
+    A = [...
+        0, 0, cos(chi), -Vg*sin(chi), 0, 0, 0;...
+        
+        0, 0, sin(chi), Vg*cos(chi), 0, 0, 0;...
+        
+        0, 0, -Vgdot/Vg, 0, -psidot*Va*sin(psi)/Vg, ...
+        psidot*Va*cos(psi)/Vg, dVgdot_dpsi;...
+        
+        0, 0, dchidot_dVg, dchidot_dchi, 0, 0, dchidot_dpsi;...
+        
+        0, 0, 0, 0, 0, 0, 0;...
+        
+        0, 0, 0, 0, 0, 0, 0;...
+        
+        0, 0, 0, 0, 0, 0, 0;...
+        ];
 
 end
