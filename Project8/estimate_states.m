@@ -88,7 +88,7 @@ function xhat = estimate_states(uu,P)
     if t == 0
         xhat_gps = [P.pn0; P.pe0; P.Va0; P.psi0; 0; 0; P.psi0];
         P_gps = diag([.01, .01, .01, .01, .01, .01, .01]);
-        Q_gps = diag([.001, .001, .1, .1, 1, 1, .1]);
+        Q_gps = diag([.001, .001, .01, 0.01, .01, .01, .01]);
         R_gps = diag([5^2, 5^2, 2^2, (.45)^2, 20^2, 20^2]);
     end
     

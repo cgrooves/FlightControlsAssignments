@@ -88,17 +88,18 @@ function xhat = estimate_states(uu,P)
     if t == 0
         xhat_gps = [P.pn0; P.pe0; P.Va0; P.psi0; 0; 0; P.psi0];
         P_gps = diag([.01, .01, .01, .01, .01, .01, .01]);
-        Q_gps = diag([.001, .001, .1, .1, 1, 1, .1]);
+        Q_gps = diag([.001, .001, .01, 0.01, .01, .01, .01]);
         R_gps = diag([5^2, 5^2, 2^2, (.45)^2, 20^2, 20^2]);
     end
     
     u_gps = [Vahat; qhat; rhat; xhat_att(1); xhat_att(2)];
-    y_gps = [y_gps_n;
-        y_gps_e;
-        y_gps_Vg;
-        y_gps_course;
+    y_gps = [y_gps_n;...
+        y_gps_e;...
+        y_gps_Vg;...
+        y_gps_course;...
         Vahat*cos(xhat_gps(7)) + xhat_gps(5) - xhat_gps(3)*cos(xhat_gps(4));...
-        Vahat*sin(xhat_gps(7)) + xhat_gps(6) - xhat_gps(3)*];
+        Vahat*sin(xhat_gps(7)) + xhat_gps(6) - xhat_gps(3)*sin(xhat_gps(4));...
+        ];
     
     % Prediction Steps
     N = 10;
