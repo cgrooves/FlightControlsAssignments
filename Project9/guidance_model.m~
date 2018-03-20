@@ -121,19 +121,18 @@ function sys=mdlDerivatives(t,x,u,P)
   h      = x(5); % altitude 
   hdot   = x(6); % climb rate
   Va     = x(7); % airspeed
-  
   Va_c   = u(1); % commanded airspeed
   h_c    = u(2); % commanded altitude
   chi_c  = u(3); % commanded heading angle
   
   % Guidance model given by Eq. 9.19
-  pndot = Va*cos(chi) + P.wind_n;
-  pedot = Va*sin(chi) + P.wind_e;
-%   chidot = 0;
-  chiddot = P.bchidot*(-chidot) + P.bchi*(chi_c - chi);
-%   hdot = 0;
-  hddot = P.bhdot*(-hdot) + P.bh*(h_c - h);
-  Vadot = P.bVa*(Va_c - Va);   
+  pndot = Va*cos(psi);
+  pedot = Va*sin(psi);
+  chidot = 0;
+  chiddot = P.bchidot*(chidot_c - chidot) + P.bchi*(chi_c - chi);
+  hdot = 0;
+  hddot = P.bhdot*(hdot_c - hdot) + P.bh*(h_c - h);
+  Vadot = bVa*(Va_c - Va);   
   
 sys = [...
     pndot;...
@@ -187,7 +186,7 @@ function sys=mdlOutputs(t,x,u,P)
   Vg  = [cos(chi), sin(chi)]*(Va*[cos(psi); sin(psi)] + [wn; we]); 
   
   % roll angle is given by psidot = g/V*tan(phi)
-  phi     = atan(Vg*chidot/P.g);
+  phi     = atan(Vg*chidot/P.gravity);
   
   % letting theta equal flight path angle given by hdot = V sin(gamma)
   theta = asin(hdot/Va);

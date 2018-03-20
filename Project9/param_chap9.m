@@ -178,3 +178,9 @@ run('compute_gains.m')
 % % linearize the equations of motion around trim conditions
 %[A_lon, B_lon, A_lat, B_lat] = compute_ss_model('mavsim_trim',x_trim,u_trim);
 
+% Guidance Model Parameters
+P.bVa = 0.8;
+P.bhdot = 1.99;
+P.bh = .8;
+P.bchidot = 3; % less steep
+P.bchi = 0.8; % more steep
