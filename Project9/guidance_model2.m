@@ -182,7 +182,7 @@ function sys=mdlOutputs(t,x,u,P)
   we = P.wind_e;
   
   % solve for course and groundspeed
-  chi = atan(tan(psi) + 0); %wn/we);
+  chi = atan2((Va*sin(psi) + wn),(Va*cos(psi) + we)); %wn/we);
   %psi = chi - asin( (-P.wind_n*sin(chi)+P.wind_e*cos(chi))/Va );
   Vg  = [cos(chi), sin(chi)]*(Va*[cos(psi); sin(psi)] + [wn; we]); 
   
