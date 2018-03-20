@@ -1,4 +1,4 @@
-function [sys,x0,str,ts,simStateCompliance] = guidance_model(t,x,u,flag,P)
+function [sys,x0,str,ts,simStateCompliance] = guidance_model2(t,x,u,flag,P)
 
 switch flag,
 
@@ -82,10 +82,10 @@ x0  = [...
     P.pn0;...    % initial North position
     P.pe0;...    % initial East position
     P.psi0;...   % initial heading
-    0;...        % initial heading rate
     -P.pd0;...   % initial altitude
     0;...        % initial climb rate
     P.Va0;...    % initial airspeed
+    P.phi0;...
     ];
 
 %
@@ -116,32 +116,32 @@ simStateCompliance = 'UnknownSimState';
 function sys=mdlDerivatives(t,x,u,P)
   pn     = x(1); % North position
   pe     = x(2); % East position
-  chi    = x(3); % heading
-  chidot = x(4); % heading rate
-  h      = x(5); % altitude 
-  hdot   = x(6); % climb rate
-  Va     = x(7); % airspeed
+  psi    = x(3); % heading
+  h      = x(4); % altitude
+  hdot   = x(5); % climb rate 
+  Va     = x(6); % airspeed
+  phi    = x(7); % roll
+  
   Va_c   = u(1); % commanded airspeed
   h_c    = u(2); % commanded altitude
-  chi_c  = u(3); % commanded heading angle
+  phi_c  = u(3); % commanded heading angle
   
   % Guidance model given by Eq. 9.19
-  pndot = Va*cos(psi);
-  pedot = Va*sin(psi);
-  chidot = 0;
-  chiddot = P.bchidot*(chidot_c - chidot) + P.bchi*(chi_c - chi);
-  hdot = 0;
-  hddot = P.bhdot*(hdot_c - hdot) + P.bh*(h_c - h);
-  Vadot = bVa*(Va_c - Va);   
+  pndot = Va*cos(psi) + P.wind_n;
+  pedot = Va*sin(psi) + P.wind_e;
+  psidot = P.g/Va*tan(phi);
+  hddot = P.bhdot*(-hdot) + P.bh*(h_c - h);
+  Vadot = P.bVa*(Va_c - Va);
+  phidot = P.bphi*(phi_c - phi);
   
 sys = [...
     pndot;...
     pedot;...
-    chidot;...
-    chiddot;...
+    psidot;...
     hdot;...
     hddot;...
     Vadot;...
+    phidot;...
     ];
 
 % end mdlDerivatives
@@ -168,11 +168,11 @@ sys = [];
 function sys=mdlOutputs(t,x,u,P)
   pn     = x(1); % North position
   pe     = x(2); % East position
-  chi    = x(3); % course
-  chidot = x(4); % course rate
-  h      = x(5); % altitude
-  hdot   = x(6); % climb rate
-  Va     = x(7); % airspeed
+  psi    = x(3); % heading
+  h      = x(4); % altitude
+  hdot   = x(5); % climb rate 
+  Va     = x(6); % airspeed
+  phi    = x(7); % roll
   
   alpha  = 0;
   beta   = 0;
@@ -181,12 +181,10 @@ function sys=mdlOutputs(t,x,u,P)
   wn = P.wind_n;
   we = P.wind_e;
   
-  % solve for heading and groundspeed
-  psi = chi - asin( (-P.wind_n*sin(chi)+P.wind_e*cos(chi))/Va );
+  % solve for course and groundspeed
+  chi = atan(tan(psi) + 0); %wn/we);
+  %psi = chi - asin( (-P.wind_n*sin(chi)+P.wind_e*cos(chi))/Va );
   Vg  = [cos(chi), sin(chi)]*(Va*[cos(psi); sin(psi)] + [wn; we]); 
-  
-  % roll angle is given by psidot = g/V*tan(phi)
-  phi     = atan(Vg*chidot/P.gravity);
   
   % letting theta equal flight path angle given by hdot = V sin(gamma)
   theta = asin(hdot/Va);

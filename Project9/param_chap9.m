@@ -184,3 +184,4 @@ P.bhdot = 1.99;
 P.bh = .8;
 P.bchidot = 3; % less steep
 P.bchi = 0.8; % more steep
+P.bphi = 1.2;

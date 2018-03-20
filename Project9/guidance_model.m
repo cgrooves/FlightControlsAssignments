@@ -219,7 +219,7 @@ function sys=mdlOutputs(t,x,u,P)
 % change the drawing routine.
 sys = [pn; pe; h; Va; alpha; beta; phi; theta; chi; p; q; r; Vg; wn; we; psi;...
     pn; pe; -h; Va; 0; 0; phi; theta; psi; p; q; r];
-    
+
 
 
 
