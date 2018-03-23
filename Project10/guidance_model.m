@@ -127,7 +127,7 @@ function sys=mdlDerivatives(t,x,u,P)
   phi_ff = u(4); % feedforward roll command
   
   % compute chi_c_dot from roll feedforward
-  chi_c_dot = P.gravity/Va*tan(phi_ff);
+  chi_c_dot = P.g/Va*tan(phi_ff);
   
   % solve for heading and groundspeed
   psi = chi - asin( (-P.wind_n*sin(chi)+P.wind_e*cos(chi))/Va );
@@ -141,9 +141,9 @@ function sys=mdlDerivatives(t,x,u,P)
 
   % don't let climb rate exceed Va*sin(\gamma_max)
   hddot   = -P.b_hdot*hdot + P.b_h*(h_c-h);
-  if (hdot>=Va*sin(P.gamma_max)) & (hddot>0),
+  if (hdot>=Va*sin(P.gamma_max)) && (hddot>0)
       hddot = 0;
-  elseif (hdot<=-Va*sin(P.gamma_max)) & (hddot<0),
+  elseif (hdot<=-Va*sin(P.gamma_max)) && (hddot<0)
       hddot = 0;
   end
   
@@ -200,7 +200,7 @@ function sys=mdlOutputs(t,x,u,P)
   Vg  = [cos(chi), sin(chi)]*(Va*[cos(psi); sin(psi)] + [wn; we]); 
   
   % roll angle is given by psidot = g/V*tan(phi)
-  phi     = atan(Vg*chidot/P.gravity);
+  phi     = atan(Vg*chidot/P.g);
   
   % letting theta equal flight path angle given by hdot = V sin(gamma)
   theta = asin(hdot/Va);

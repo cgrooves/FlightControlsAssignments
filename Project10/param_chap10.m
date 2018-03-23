@@ -143,9 +143,9 @@ P.u_trim = u_trim;
 P.x_trim = x_trim;
 
 % Set initial conditions to trim conditions
-P.pn0 = -1000;
+P.pn0 = 0;
 P.pe0 = 0;
-P.pd0 = -100;
+P.pd0 = 0;
 P.u0 = x_trim(4);
 P.v0 = x_trim(5);
 P.w0 = x_trim(6);
@@ -179,14 +179,15 @@ run('compute_gains.m')
 %[A_lon, B_lon, A_lat, B_lat] = compute_ss_model('mavsim_trim',x_trim,u_trim);
 
 % Guidance Model Parameters
-P.bVa = 0.8;
-P.bhdot = 1.99;
-P.bh = .8;
-P.bchidot = 3; % less steep
-P.bchi = 0.8; % more steep
-P.bphi = 1.2;
+P.b_Va = 0.8;
+P.b_hdot = 1.99;
+P.b_h = .8;
+P.b_chidot = 3; % less steep
+P.b_chi = 0.8; % more steep
+P.b_phi = 1.2;
+P.gamma_max = 1;
 
 % Path Follower
-P.chi_inf = 30*pi/180; % between 0 and 90 deg.
-P.kpath = 4;
-P.korbit = 4;
+P.chi_inf = 25*pi/180; % between 0 and 90 deg.
+P.k_path = 0.1;
+P.k_orbit = 1;

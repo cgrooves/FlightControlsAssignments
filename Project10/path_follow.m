@@ -120,7 +120,7 @@ function out = path_follow(in,P)
               phi = phi - 2*pi;
           end
           % 10
-          chi_c = phi + lam_orbit*(pi/2 + atan(P.korbit*(d - rho_orbit)/rho_orbit));
+          chi_c = phi + lam_orbit*(pi/2 + atan(P.k_orbit*(d - rho_orbit)/rho_orbit));
           % Feedforward phi command - derived from coordinated turn
           % expression
           phi_ff = lam_orbit*atan(Va^2/(P.g*rho_orbit));
