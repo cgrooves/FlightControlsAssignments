@@ -66,8 +66,8 @@ function out = path_follow(in,P)
   
   pd = -h;
   
-  switch flag,
-      case 1, % follow straight line path specified by r and q
+  switch flag
+      case 1 % follow straight line path specified by r and q
           
           
           % Define relative error vector
@@ -96,15 +96,34 @@ function out = path_follow(in,P)
           % 10. course command
           chi_c = chi_q - P.chi_inf*2/pi*atan(P.k_path*ep_y);
           
-          chi_c = ;
-          h_c = ;
-          phi_ff = ;
+          phi_ff = 0;
            
-      case 2, % follow orbit specified by c, rho, lam
-
-           chi_c = ;
-          h_c = ;
-          phi_ff = ;
+      case 2 % follow orbit specified by c, rho, lam
+          % Enumerate orbit center
+          cn = c_orbit(1);
+          ce = c_orbit(2);
+          cd = c_orbit(3);
+          
+          % Algorithm 4 **********************************
+          % 1.
+          h_c = -cd;
+          % 2.
+          d = sqrt((pn - cn)^2 + (pe - ce)^2);
+          % 3.
+          phi = atan2(pe - ce, pn - cn);
+          % 4 - 6
+          while phi - chi < -pi
+              phi = phi + 2*pi;
+          end
+          % 7 - 9
+          while phi - chi > pi
+              phi = phi - 2*pi;
+          end
+          % 10
+          chi_c = phi + lam_orbit*(pi/2 + atan(P.korbit*(d - rho_orbit)/rho_orbit));
+          % Feedforward phi command - derived from coordinated turn
+          % expression
+          phi_ff = lam_orbit*atan(Va^2/(P.g*rho_orbit));
   end
   
   % command airspeed equal to desired airspeed

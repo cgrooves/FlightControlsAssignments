@@ -185,3 +185,8 @@ P.bh = .8;
 P.bchidot = 3; % less steep
 P.bchi = 0.8; % more steep
 P.bphi = 1.2;
+
+% Path Follower
+P.chi_inf = 30*pi/180; % between 0 and 90 deg.
+P.kpath = 4;
+P.korbit = 4;
