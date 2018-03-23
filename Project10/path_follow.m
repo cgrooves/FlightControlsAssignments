@@ -75,7 +75,7 @@ function out = path_follow(in,P)
               pe - re;...
               pd - rd];
           
-          n = 1/norm([qe -qn 0]')*[qe -qn 0]';
+          n = [qe -qn 0]'/sqrt(qe^2 + qn^2);
           s = ep - (ep'*n)*n;
           
           % Algorithm 3 ******************************************

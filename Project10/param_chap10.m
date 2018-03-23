@@ -123,8 +123,8 @@ P.q0     =  0; % initial body frame pitch rate
 P.r0     =  0; % initial body frame yaw rate
 
 % wind parameters
-P.wind_n = 0;%3;
-P.wind_e = 0;%2;
+P.wind_n = 3;%3;
+P.wind_e = -3;%2;
 P.wind_d = 0;
 P.L_u = 200;
 P.L_v = 200;
@@ -185,9 +185,9 @@ P.b_h = .8;
 P.b_chidot = 3; % less steep
 P.b_chi = 0.8; % more steep
 P.b_phi = 1.2;
-P.gamma_max = 1;
+P.gamma_max = 30*pi/180;
 
 % Path Follower
 P.chi_inf = 25*pi/180; % between 0 and 90 deg.
 P.k_path = 0.1;
-P.k_orbit = 1;
+P.k_orbit = 2;
