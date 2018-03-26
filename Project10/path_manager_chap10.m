@@ -39,7 +39,7 @@ function out = path_manager_chap10(in)
   t         = in(1+NN);
  
 
-   if 0
+   if 1
     % define waypoint path
     flag   = 1;
     Va_d   = 35;

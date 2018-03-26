@@ -188,6 +188,6 @@ P.b_phi = 1.2;
 P.gamma_max = 30*pi/180;
 
 % Path Follower
-P.chi_inf = 25*pi/180; % between 0 and 90 deg.
-P.k_path = 0.1;
-P.k_orbit = 2;
+P.chi_inf = 60*pi/180; % between 0 and 90 deg.
+P.k_path = 0.001;
+P.k_orbit = .1;
