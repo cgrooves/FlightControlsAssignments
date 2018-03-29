@@ -146,6 +146,7 @@ P.x_trim = x_trim;
 P.pn0 = 0;
 P.pe0 = 0;
 P.pd0 = 0;
+P.h0 = -P.pd0;
 P.u0 = x_trim(4);
 P.v0 = x_trim(5);
 P.w0 = x_trim(6);
@@ -189,13 +190,13 @@ P.gamma_max = 30*pi/180;
 
 % Path Follower
 P.chi_inf = 60*pi/180; % between 0 and 90 deg.
-P.k_path = 0.001;
+P.k_path = 0.005;
 P.k_orbit = .1;
 
 % chapter 11 - path manager
 % number of waypoints in data structure
 P.size_waypoint_array = 100;
-P.R_min = P.Va0^2/P.gravity/tan(P.phi_max);
+P.R_min = P.Va0^2/P.g/tan(30*pi/180);
 
 % create random city map
 city_width      = 2000;  % the city is of size (width)x(width)
@@ -203,5 +204,5 @@ building_height = 300;   % maximum height of buildings
 %building_height = 1;   % maximum height of buildings (for camera)
 num_blocks      = 5;    % number of blocks in city
 street_width    = .8;   % percent of block that is street.
-P.pd0           = -h0;  % initial height of MAV
+P.pd0           = -200;  % initial height of MAV
 P.map = createWorld(city_width, building_height, num_blocks, street_width);

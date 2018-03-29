@@ -32,7 +32,7 @@ function out = path_manager_line(in,P,start_of_simulation)
   pn        = in(1+NN);
   pe        = in(2+NN);
   h         = in(3+NN);
-  % Va      = in(4+NN);
+   Va      = in(4+NN);
   % alpha   = in(5+NN);
   % beta    = in(6+NN);
   % phi     = in(7+NN);
@@ -57,29 +57,46 @@ function out = path_manager_line(in,P,start_of_simulation)
   persistent flag_need_new_waypoints % flag that request new waypoints from path planner
   
   
-  if start_of_simulation || isempty(waypoints_old),
+  if start_of_simulation || isempty(waypoints_old)
       waypoints_old = zeros(5,P.size_waypoint_array);
-      flag_need_new_waypoints = 0;
+      flag_need_new_waypoints = 1;
      
   end
   
   % if the waypoints have changed, update the waypoint pointer
-  if min(min(waypoints==waypoints_old))==0,
-      ptr_a = 1;
+  if min(min(waypoints==waypoints_old)) == 0
+      ptr_a = 2;
       waypoints_old = waypoints;
       flag_need_new_waypoints = 0;
   end
   
- 
+  % Implement Algorithm 5
+  % Get relevant waypoints
+  wi = waypoints(1:3,ptr_a);
+  wi_m1 = waypoints(1:3,ptr_a-1);
+  wi_p1 = waypoints(1:3,ptr_a+1);
+  
+  % Get relevant directions and half-plane normal
+  qi_m1 = (wi - wi_m1)/norm(wi - wi_m1);
+  qi = (wi_p1 - wi)/norm(wi_p1 - wi);
+  ni = (qi_m1 + qi)/norm(qi_m1 + qi);
+  
+  % Check to see if plane has crossed half-plane
+  err = p - wi;
+  
+  if ni'*err > 0 && ptr_a < num_waypoints
+      ptr_a = ptr_a + 1;
+  end
+  
   % construct output for path follower
-  flag   = ;                  % following straight line path
-  Va_d   = ; % desired airspeed along waypoint path
-  r      = ;
-  q      = ;
+  flag   = 1;  % following straight line path
+  Va_d   = Va; % desired airspeed along waypoint path
+  r      = wi_m1;
+  q      = qi_m1;
   q      = q/norm(q);
-  c      = ;
-  rho    = ;
-  lambda = ;
+  c      = [0; 0; 0];
+  rho    = 0;
+  lambda = 0;
   
   out = [flag; Va_d; r; q; c; rho; lambda; state; flag_need_new_waypoints];
 

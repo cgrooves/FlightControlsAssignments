@@ -33,7 +33,7 @@ wn_chi = wn_phi/WX; % bandwidth separation
 % P.kp_chi = 1.53; %2*zeta_chi*wn_chi*Vg/P.g;
 % P.ki_chi = 0.6885; %wn_chi^2*Vg/P.g;
 
-P.kp_chi = 1.2;
+P.kp_chi = 0.8;
 P.ki_chi = 0.041;
 
 P.kp_phi = 0.88;
