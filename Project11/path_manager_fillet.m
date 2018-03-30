@@ -33,7 +33,7 @@ function out = path_manager_fillet(in,P,start_of_simulation)
   pn        = in(1+NN);
   pe        = in(2+NN);
   h         = in(3+NN);
-  % Va      = in(4+NN);
+  Va      = in(4+NN);
   % alpha   = in(5+NN);
   % beta    = in(6+NN);
   % phi     = in(7+NN);
@@ -59,49 +59,65 @@ function out = path_manager_fillet(in,P,start_of_simulation)
   persistent flag_need_new_waypoints % flag that request new waypoints from path planner
   
   
-  if start_of_simulation || isempty(waypoints_old),
+  if start_of_simulation || isempty(waypoints_old)
       waypoints_old = zeros(5,P.size_waypoint_array);
-      flag_need_new_waypoints = 0;
+      flag_need_new_waypoints = 1;
      
   end
   
   % if the waypoints have changed, update the waypoint pointer
-  if min(min(waypoints==waypoints_old))==0,
-      ptr_a = 1;
+  if min(min(waypoints==waypoints_old)) == 0
+      ptr_a = 2;
       waypoints_old = waypoints;
       state_transition = 1;
       flag_need_new_waypoints = 0;
   end
   
   % define current and next two waypoints
-
+  wi_m1 = waypoints(1:3,ptr_a-1);
+  wi = waypoints(1:3,ptr_a);
+  wi_p1 = waypoints(1:3,ptr_a+1);
+  
+  qi_m1 = (wi - wi_m1)/norm(wi - wi_m1);
+  qi = (wi_p1 - wi)/norm(wi_p1 - wi);
+  var_rho = acos(-qi_m1'*qi);
   
   % define transition state machine
-  switch state_transition,
-      case 1, % follow straight line from wpp_a to wpp_b
-          flag   = ;  % following straight line path
-          Va_d   = ; % desired airspeed along waypoint path
-          r      = ;
-          q      = ;
+  switch state_transition
+      case 1 % follow straight line from wpp_a to wpp_b
+          flag   = 1;  % following straight line path
+          Va_d   = Va; % desired airspeed along waypoint path
+          r      = wi_m1;
+          q      = qi_m1;
           q      = q/norm(q);
-          c      = ;
-          rho    = ;
-          lambda = ;
+          c      = [0 0 0]';
+          rho    = 0;
+          lambda = 0;
           
+          % Check if plane should start orbit yet
+          z = wi - (P.R_min/tan(var_rho/2))*qi_m1;
+          if (p - z)'*qi_m1 > 0 && ptr_a < num_waypoints
+              state_transition = 2;
+          end
              
-      case 2, % follow orbit from wpp_a-wpp_b to wpp_b-wpp_c
-          flag   = ;  % following orbit
-          Va_d   = ; % desired airspeed along waypoint path
-          r      = ;
-          q      = ;
+      case 2 % follow orbit from wpp_a-wpp_b to wpp_b-wpp_c
+          flag   = 2;  % following orbit
+          Va_d   = Va; % desired airspeed along waypoint path
+          r      = wi_m1;
+          q      = qi_m1;
           q      = q/norm(q);
-          q_next = ;
-          q_next = q_next/norm(q_next);
-          beta   = ;
-          c      = ;
-          rho    = ;
-          lambda = ;
+          %q_next = ;
+          %q_next = q_next/norm(q_next);
+          %beta   = ;
+          c      = wi - (P.R_min/tan(var_rho/2))*(qi_m1 - qi)/norm(qi_m1 - qi);
+          rho    = P.R_min;
+          lambda = sign(qi_m1(1)*qi(2)-qi_m1(2)*qi(1));
+          z = wi + P.R_min/tan(var_rho/2)*qi;
           
+          if (p-z)'*qi > 0 && ptr_a < num_waypoints
+              ptr_a = ptr_a + 1;
+              state_transition = 1;
+          end
 
   end
   
