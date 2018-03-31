@@ -44,16 +44,16 @@ function dubinspath = dubinsParameters(start_node, end_node, R)
     cle = pe + R*rotz(-pi/2)*[cos(chie), sin(chie), 0]';
     
     % compute L1
-    a = cre - crs;
-    theta = acos(a(1)/norm(a));
-    L1 = norm(crs - cre) + R*mod(2*pi + mod(theta - pi/2,2*pi) - ...
-        mod(chis - pi/2,2*pi),2*pi) + R*mod(2*pi + mod(chie - pi/2,2*pi)...
+    a1 = cre - crs;
+    theta = acos(a1(1)/norm(a1));
+    L1 = norm(crs - cre) + R*mod(2*pi + mod(theta - pi/2, 2*pi) - ...
+        mod(chis - pi/2,2*pi), 2*pi) + R*mod(2*pi + mod(chie - pi/2, 2*pi)...
         - mod(theta - pi/2, 2*pi), 2*pi);
     
     % compute L2
     ell = norm(cle - crs);
-    a = cle - crs;
-    theta = acos(a(1)/norm(a));
+    a2 = cle - crs;
+    theta = acos(a2(1)/norm(a2));
     theta2 = theta - pi/2 + asin(2*R/ell);
     if isreal(theta2)==0 
       L2 = 9999; 
@@ -64,19 +64,19 @@ function dubinspath = dubinsParameters(start_node, end_node, R)
     end
     % compute L3
     ell = norm(cre - cls);
-    a = cre - cls;
-    theta = acos(a(1)/norm(a));
+    a3 = cre - cls;
+    theta = acos(a3(1)/norm(a3));
     theta2 = acos(2*R/ell);
     if isreal(theta2)==0
       L3 = 9999;
     else
-      L3 = sqrt(l^2 - 4*R^2) + R*mod(2*pi + mod(chis + pi/2, 2*pi) - ...
+      L3 = sqrt(ell^2 - 4*R^2) + R*mod(2*pi + mod(chis + pi/2, 2*pi) - ...
           mod(theta + theta2, 2*pi), 2*pi) + R*mod(2*pi + mod(chie - ...
           pi/2, 2*pi) - mod(theta + theta2 - pi, 2*pi), 2*pi);
     end
     % compute L4
-    a = cls - cle;
-    theta = acos(a(1)/norm(a));
+    a4 = cle - cls;
+    theta = acos(a4(1)/norm(a4));
     L4 = norm(cls - cle) + R*mod(2*pi + mod(chis + pi/2, 2*pi) - ...
         mod(theta + pi/2, 2*pi), 2*pi) + R*mod(2*pi + mod(theta + pi/2, ...
         2*pi) - mod(chie + pi/2, 2*pi), 2*pi);
@@ -93,29 +93,27 @@ function dubinspath = dubinsParameters(start_node, end_node, R)
             w1 = cs + R*rotz(-pi/2)*q1;
             w2 = ce + R*rotz(-pi/2)*q1;
         case 2 
-            cs = cls;
-            lams = -1;
-            ce = cre;
-            lame = 1;
+            cs = crs;
+            lams = 1;
+            ce = cle;
+            lame = -1;
             ell = norm(ce - cs);
-            a = ce - cs;
-            theta = acos(a(1)/norm(a));
+            theta = acos(a2(1)/norm(a2));
             theta2 = theta - pi/2 + asin(2*R/ell);
             q1 = rotz(theta2 + pi/2)*e1;
             w1 = cs + R*rotz(theta2)*e1;
-            w2 = ce + R*rotz(theta2)*e1;
+            w2 = ce + R*rotz(theta2 + pi)*e1;
         case 3
             cs = cls;
             lams = -1;
             ce = cre;
             lame = 1;
             ell = norm(ce - cs);
-            a = ce - cs;
-            theta = acos(a(1)/norm(a));
+            theta = acos(a3(1)/norm(a3));
             theta2 = acos(2*R/ell);
             q1 = rotz(theta + theta2 - pi/2)*e1;
             w1 = cs + R*rotz(theta + theta2)*e1;
-            w2 = ce + R*rotz(theta + theta2 - pi/2)*e1;
+            w2 = ce + R*rotz(theta + theta2 - pi)*e1;
          case 4
             cs = cls;
             lams = -1;

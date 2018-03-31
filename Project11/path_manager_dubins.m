@@ -71,11 +71,11 @@ function out = path_manager_dubins(in,P,start_of_simulation)
   % Dubin's path
   if min(min(waypoints==waypoints_old))==0
       waypoints_old = waypoints;
-      state_transition = 1;
-      ptr_a = 2;
-      ptr_b = 3;
-      start_node = [waypoints(1:4,ptr_a-1)', 0, 0];
-      end_node   = [waypoints(1:4,ptr_b-1)', 0, 0];      
+      state_transition = 0;
+      ptr_a = 1;
+      ptr_b = 2;
+      start_node = [waypoints(1:4,ptr_a)', 0, 0];
+      end_node   = [waypoints(1:4,ptr_b)', 0, 0];      
       dubinspath = dubinsParameters(start_node, end_node, P.R_min);  
       flag_need_new_waypoints = 0;
       flag_first_time_in_state = 1;
@@ -84,15 +84,17 @@ function out = path_manager_dubins(in,P,start_of_simulation)
   % define transition state machine
   switch state_transition
       case 0 % beginning of simulation
-          flag   = 2;
-          Va_d   = waypoints(5,ptr_a);
-          r      = dubinspath.ps;
-          q      = (dubinspath.ps - dubinspath.pe)/norm(dubinspath.ps - dubinspath.pe);
-          c      = dubinspath.cs;
-          rho    = dubinspath.R;
-          lambda = dubinspath.lams;
+          flag   = 1;
+          Va_d   = waypoints(5,1);
+          r      = waypoints(1:3,1);
+          q      = (-waypoints(1:3,1) + waypoints(1:3,2))/(norm(...
+              waypoints(1:3,1) - waypoints(1:3,2)));
+          c      = [0 0 0]';
+          rho    = 0;
+          lambda = 0;
           if flag_first_time_in_state
               flag_first_time_in_state = 0;
+              state_transition = 3;
           end
       
       case 1 % follow first orbit on Dubins path until intersect H1
@@ -160,7 +162,7 @@ function out = path_manager_dubins(in,P,start_of_simulation)
               flag_first_time_in_state=1;
           elseif (p-dubinspath.w3)'*dubinspath.q3 >= 0 % entering H3
               % increase the waypoint pointer
-              if ptr_a==num_waypoints
+              if ptr_a==num_waypoints-1
                   flag_need_new_waypoints = 1;
                   ptr_b = ptr_a+1;
               else
