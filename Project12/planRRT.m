@@ -25,11 +25,11 @@ function path_out=planRRT(wpp_start, wpp_end, map)
     
     % check to see if start_node connects directly to end_node
     if ( (norm(start_node(1:3)-end_node(1:3))<segmentLength )...
-            &(collision(start_node,end_node,map)==0) )
+            &&(collision(start_node,end_node,map)==0) )
         path = [start_node; end_node];
     else
         numPaths = 0;
-        while numPaths<3,
+        while numPaths<3
             [tree,flag] = extendTree(tree,end_node,segmentLength,map,pd,chi);
             numPaths = numPaths + flag;
         end

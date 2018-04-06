@@ -39,7 +39,7 @@ function out = path_planner(in,P,map)
     % of the waypoint is (pn, pe, pd), the desired course at the waypoint
     % is chi, and the desired airspeed between waypoints is Va
     % if chi!=-9999, then Dubins paths will be used between waypoints.
-    switch 3,
+    switch 4,
           case 1,
             num_waypoints = 4;
             wpp = [...
