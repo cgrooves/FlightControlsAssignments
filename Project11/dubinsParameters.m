@@ -43,17 +43,17 @@ function dubinspath = dubinsParameters(start_node, end_node, R)
     cre = pe + R*rotz(pi/2)*[cos(chie), sin(chie), 0]';
     cle = pe + R*rotz(-pi/2)*[cos(chie), sin(chie), 0]';
     
-    % compute L1
+    % compute L1 - RSR
     a1 = cre - crs;
-    theta = acos(a1(1)/norm(a1));
+    theta = atan2(a1(2),a1(1));
     L1 = norm(crs - cre) + R*mod(2*pi + mod(theta - pi/2, 2*pi) - ...
         mod(chis - pi/2,2*pi), 2*pi) + R*mod(2*pi + mod(chie - pi/2, 2*pi)...
         - mod(theta - pi/2, 2*pi), 2*pi);
     
-    % compute L2
+    % compute L2 - RSL
     ell = norm(cle - crs);
     a2 = cle - crs;
-    theta = acos(a2(1)/norm(a2));
+    theta = atan2(a2(2),a2(1));
     theta2 = theta - pi/2 + asin(2*R/ell);
     if isreal(theta2)==0 
       L2 = 9999; 
@@ -62,10 +62,10 @@ function dubinspath = dubinsParameters(start_node, end_node, R)
           chis - pi/2, 2*pi), 2*pi) + R*mod(2*pi + mod(theta2 + pi, 2*pi)...
           - mod(chie + pi/2, 2*pi), 2*pi);
     end
-    % compute L3
+    % compute L3 - LSR
     ell = norm(cre - cls);
     a3 = cre - cls;
-    theta = acos(a3(1)/norm(a3));
+    theta = atan2(a3(2),a3(1));
     theta2 = acos(2*R/ell);
     if isreal(theta2)==0
       L3 = 9999;
@@ -74,17 +74,17 @@ function dubinspath = dubinsParameters(start_node, end_node, R)
           mod(theta + theta2, 2*pi), 2*pi) + R*mod(2*pi + mod(chie - ...
           pi/2, 2*pi) - mod(theta + theta2 - pi, 2*pi), 2*pi);
     end
-    % compute L4
+    % compute L4 - LSL
     a4 = cle - cls;
-    theta = acos(a4(1)/norm(a4));
+    theta = atan2(a4(2),a4(1));
     L4 = norm(cls - cle) + R*mod(2*pi + mod(chis + pi/2, 2*pi) - ...
         mod(theta + pi/2, 2*pi), 2*pi) + R*mod(2*pi + mod(theta + pi/2, ...
         2*pi) - mod(chie + pi/2, 2*pi), 2*pi);
-    % L is the minimum distance
+    % L is the minimum distance 
     [L,idx] = min([L1,L2,L3,L4]);
     e1 = [1; 0; 0];
     switch(idx)
-        case 1
+        case 1 % RSR
             cs = crs;
             lams = 1;
             ce = cre;
@@ -92,29 +92,29 @@ function dubinspath = dubinsParameters(start_node, end_node, R)
             q1 = (ce - cs)/norm(ce - cs);
             w1 = cs + R*rotz(-pi/2)*q1;
             w2 = ce + R*rotz(-pi/2)*q1;
-        case 2 
+        case 2 % RSL
             cs = crs;
             lams = 1;
             ce = cle;
             lame = -1;
             ell = norm(ce - cs);
-            theta = acos(a2(1)/norm(a2));
+            theta = atan2(a2(2),a2(1));
             theta2 = theta - pi/2 + asin(2*R/ell);
             q1 = rotz(theta2 + pi/2)*e1;
             w1 = cs + R*rotz(theta2)*e1;
             w2 = ce + R*rotz(theta2 + pi)*e1;
-        case 3
+        case 3 % LSR
             cs = cls;
             lams = -1;
             ce = cre;
             lame = 1;
             ell = norm(ce - cs);
-            theta = acos(a3(1)/norm(a3));
+            theta = atan2(a3(2),a3(1));
             theta2 = acos(2*R/ell);
             q1 = rotz(theta + theta2 - pi/2)*e1;
             w1 = cs + R*rotz(theta + theta2)*e1;
             w2 = ce + R*rotz(theta + theta2 - pi)*e1;
-         case 4
+         case 4 % LSL
             cs = cls;
             lams = -1;
             ce = cle;
