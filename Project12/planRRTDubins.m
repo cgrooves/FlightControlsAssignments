@@ -6,18 +6,18 @@
 %% Last Modified - 6/8/2006 - R. Beard
 %%               - 4/15/2010 - R. Beard
 
-function path_out=planRRTDubins(wpp_start, wpp_end, map)
+function path_out=planRRTDubins(wpp_start, wpp_end, R_min, map)
 
     % standard length of path segments
-    segmentLength = 100;
+    segmentLength = 2.5*R_min; % must be at least 2*R_min apart
 
     % desired down position is down position of end node
     pd = wpp_end(3);
-    chi = -9999;
+    chi = atan2(wpp_end(2)-wpp_start(2),wpp_end(1)-wpp_start(1));
     
     % specify start and end nodes from wpp_start and wpp_end
-    start_node = [wpp_start(1), wpp_start(2), pd, chi, 0, 0, 0];
-    end_node = [wpp_end(1), wpp_end(2), pd, chi, 0, 0, 0];
+    start_node = [wpp_start(1), wpp_start(2), pd, 0, 0, 0, 0];
+    end_node = [wpp_end(1), wpp_end(2), pd, 0, 0, 0, 0];
     % format:  [N, E, D, chi, cost, parent_idx, flag_connect_to_goal]
 
     % establish tree starting with the start node
@@ -37,7 +37,7 @@ function path_out=planRRTDubins(wpp_start, wpp_end, map)
 
     % find path with minimum cost to end_node
     path = findMinimumPath(tree,end_node);
-    path_out = smoothPath(path,map);
+    path_out = smoothPath(path,R_min,map);
     plotmap(map,path,path_out,tree);
 
 end
@@ -157,8 +157,8 @@ function path = findMinimumPath(tree,end_node)
     
     % find nodes that connect to end_node
     connectingNodes = [];
-    for i=1:size(tree,1),
-        if tree(i,7)==1,
+    for i=1:size(tree,1)
+        if tree(i,7)==1
             connectingNodes = [connectingNodes; tree(i,:)];
         end
     end
@@ -170,7 +170,7 @@ function path = findMinimumPath(tree,end_node)
     % construct lowest cost path
     path = [connectingNodes(idx,:); end_node];
     parent_node = connectingNodes(idx,6);
-    while parent_node>1,
+    while parent_node>1
         parent_node = tree(parent_node,6);
         path = [tree(parent_node,:); path];
     end
@@ -180,13 +180,18 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% smoothPath
 %%   smooth the waypoint path 
-function newPath = smoothPath(path,map)
+function newPath = smoothPath(path,R_min,map)
 
     newPath = path(1,:); % add the start node 
     ptr =2;  % pointer into the path
-    while ptr <= size(path,1)-1,
-        if collision(newPath(end,:), path(ptr+1,:), map)~=0, % if there is a collision
+    while ptr <= size(path,1)-1
+        if collision(newPath(end,:), path(ptr+1,:), map)~=0 && ...% if there is a collision
+                norm(newPath(end,1:2)-path(ptr+1,1:2)) >= R_min
             newPath = [newPath; path(ptr,:)];  % add previous node
+            % define the angle between the new point and the previous one
+            chi = atan2(newPath(end,2)-newPath(end-1,2),newPath(end,1)-...
+                newPath(end-1,1));
+            newPath(end-1,4) = chi; % assign chi to the previous waypoint config
         end
         ptr=ptr+1;
     end

@@ -34,13 +34,13 @@ function out = path_planner(in,P,map)
   persistent wpp
   
 
-  if (t==0) || flag_new_waypoints,
+  if (t==0) || flag_new_waypoints
     % format for each point is [pn, pe, pd, chi, Va^d] where the position
     % of the waypoint is (pn, pe, pd), the desired course at the waypoint
     % is chi, and the desired airspeed between waypoints is Va
     % if chi!=-9999, then Dubins paths will be used between waypoints.
-    switch 4,
-          case 1,
+    switch 3
+          case 1
             num_waypoints = 4;
             wpp = [...
                    0, 0, -100, -9999, P.Va0;...
@@ -48,7 +48,7 @@ function out = path_planner(in,P,map)
                     0, 300, -100, -9999, P.Va0;...
                     300, 300, -100, -9999, P.Va0;...
                   ];
-          case 2,  % Dubins
+          case 2  % Dubins
             num_waypoints = 4;
             wpp = [...
                     0, 0, -100, 0, P.Va0;...
@@ -56,11 +56,11 @@ function out = path_planner(in,P,map)
                     0, 300, -100, 45*pi/180, P.Va0;...
                     300, 300, -100, -135*pi/180, P.Va0;...
                   ];
-          case 3,  % path through city using Dubin's paths
+          case 3  % path through city using Dubin's paths
                % current configuration
               wpp_start = [pn, pe, -h, chi, P.Va0];
               % desired end waypoint
-              if norm([pn; pe; -h]-[map.width; map.width; -h])<map.width/2,
+              if norm([pn; pe; -h]-[map.width; map.width; -h])<map.width/2
                   wpp_end = [0, 0, -h, 0, P.Va0];
               else
                   wpp_end = [map.width, map.width, P.pd0, 0, P.Va0];
@@ -68,17 +68,17 @@ function out = path_planner(in,P,map)
               waypoints = planRRTDubins(wpp_start, wpp_end, P.R_min, map);
               num_waypoints = size(waypoints,1);
               wpp = [];
-              for i=1:num_waypoints,
+              for i=1:num_waypoints
                   wpp = [...
                             wpp;...
                             waypoints(i,1), waypoints(i,2), waypoints(i,3), waypoints(i,4), P.Va0;...
                         ];
               end
-          case 4,  % path through city using straight-line RRT
+          case 4  % path through city using straight-line RRT
                % current configuration
               wpp_start = [pn, pe, -h, chi, P.Va0];
               % desired end waypoint
-              if norm([pn; pe; -h]-[map.width; map.width; -h])<map.width/2,
+              if norm([pn; pe; -h]-[map.width; map.width; -h])<map.width/2
                   wpp_end = [0, 0, -h, 0, P.Va0];
               else
                   wpp_end = [map.width, map.width, P.pd0, 0, P.Va0];
@@ -86,26 +86,26 @@ function out = path_planner(in,P,map)
               waypoints = planRRT(wpp_start, wpp_end, map);
               num_waypoints = size(waypoints,1);
               wpp = [];
-              for i=1:num_waypoints,
+              for i=1:num_waypoints
                   wpp = [...
                             wpp;...
                             waypoints(i,1), waypoints(i,2), waypoints(i,3), waypoints(i,4), P.Va0;...
                         ];
               end
-          case 5,  % cover path through city using Dubin's paths
+          case 5  % cover path through city using Dubin's paths
                % current configuration
               wpp_start = [pn, pe, -h, chi, P.Va0];
               waypoints = planCoverRRTDubins(wpp_start, P.R_min, map);
               num_waypoints = size(waypoints,1);
               wpp = [];
-              for i=1:num_waypoints,
+              for i=1:num_waypoints
                   wpp = [...
                             wpp;...
                             waypoints(i,1), waypoints(i,2), waypoints(i,3), waypoints(i,4), P.Va0;...
                         ];
               end
     end      
-    for i=num_waypoints+1:P.size_waypoint_array,
+    for i=num_waypoints+1:P.size_waypoint_array
           wpp = [...
                     wpp;...
                     -9999, -9999, -9999, -9999, -9999;...
