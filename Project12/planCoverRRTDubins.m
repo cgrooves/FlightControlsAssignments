@@ -3,7 +3,7 @@
 %%  
 %% Last Modified - 11/15/2010 - R. Beard
 
-function path=planCover(wpp_start, R_min, map)
+function path=planCoverRRTDubins(wpp_start, R_min, map)
     
     % desired down position is down position of start node
     pd = wpp_start(3);
@@ -14,7 +14,7 @@ function path=planCover(wpp_start, R_min, map)
  
  
     % return map
-    returnMapSize = 2.5*R_min;  % this is a critical parameter!
+    returnMapSize = 30;  % this is a critical parameter!
     return_map = 50*ones(returnMapSize,returnMapSize)+ rand(returnMapSize,returnMapSize);
     plotReturnMap(return_map), %pause
 
@@ -22,7 +22,7 @@ function path=planCover(wpp_start, R_min, map)
     SEARCH_CYCLES = 50;  % number of search cycles
        
     % look ahead tree parameters
-    L = 50;  % segment Length
+    L = 2.5*R_min;  % segment Length
     vartheta = pi/4; % search angle
     depth = 5; % depth of look ahead tree
     
@@ -47,10 +47,15 @@ function path=planCover(wpp_start, R_min, map)
         end
     end
         
-    % specify that these are straight-line paths.
-    for i=1:size(path,1),
-        path(i,4)=-9999; 
+    % Add chi to each configuration
+    path(1,4) = 0;
+    
+    for i=2:size(path,1)
+        chi = atan2(path(i,2)-path(i-1,2),path(i,1)-path(i-1,1));
+        path(i-1,4) = chi;
     end
+    
+    path(size(path,1),4) = 0;
 
 end
 
